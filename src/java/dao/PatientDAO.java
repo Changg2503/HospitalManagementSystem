@@ -19,7 +19,7 @@ import java.sql.ResultSet;
 public class PatientDAO extends DBContext {
     
     
-    public List<Patient> getAllPatients() {
+    public List<Patient> getAll() {
 
     List<Patient> list = new ArrayList<>();
 
@@ -80,7 +80,7 @@ public Patient getPatientById(int id){
     return null;
 }
 //Insert
-public void insertPatient(Patient p){
+public void insert(Patient p){
 
     String sql=
     "INSERT INTO Patient(FullName,Gender,DOB,Phone,Address)"
@@ -102,7 +102,7 @@ public void insertPatient(Patient p){
     }catch(Exception e){}
 }
 //Update
-public void updatePatient(Patient p){
+public void update(Patient p){
 
     String sql=
     "UPDATE Patient "
@@ -127,7 +127,7 @@ public void updatePatient(Patient p){
     }catch(Exception e){}
 }
 //Delete
-public void deletePatient(int id){
+public void delete(int id){
 
     String sql=
     "DELETE FROM Patient WHERE PatientID=?";
