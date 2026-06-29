@@ -50,7 +50,7 @@ public class PatientDAO extends DBContext {
     return list;
 }
 //Lấy theo ID
-public Patient getPatientById(int id){
+public Patient getById(int id){
 
     String sql =
     "SELECT * FROM Patient WHERE PatientID=?";
