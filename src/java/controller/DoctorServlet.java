@@ -5,12 +5,15 @@
 
 package controller;
 
+import dao.DoctorDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
+import model.Doctor;
 
 /**
  *
@@ -53,9 +56,8 @@ public class DoctorServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-         String action =
-                request.getParameter(
-                        "action");
+        DoctorDAO dao = new DoctorDAO();
+         String action = request.getParameter("action");
 
         if (action == null) {
             action = "list";
@@ -63,21 +65,94 @@ public class DoctorServlet extends HttpServlet {
 
         switch (action) {
 
-            case "home":
-                request.getRequestDispatcher(
-                        "jsp/doctor/home.jsp")
-                        .forward(request,
-                                response);
-                break;
-
+            //================ LIST + PAGINATION =================
             case "list":
-                // code list doctor
+
+                int page = 1;
+
+                try {
+                    String index = request.getParameter("page");
+                    if (index != null) {
+                        page = Integer.parseInt(index);
+                    }
+                } catch (Exception e) {
+                    page = 1;
+                }
+
+                List<Doctor> list = dao.paging(page);
+
+                int total = dao.getTotal();
+
+                int endPage = total / 5;
+
+                if (total % 5 != 0) {
+                    endPage++;
+                }
+
+                request.setAttribute("listDoctor", list);
+                request.setAttribute("currentPage", page);
+                request.setAttribute("endPage", endPage);
+
+                request.getRequestDispatcher("/doctor.jsp")
+                        .forward(request, response);
+
                 break;
 
-            case "create":
-                // code create
+            //================ SEARCH =================
+            case "search":
+
+                String keyword = request.getParameter("keyword");
+
+                if (keyword == null) {
+                    keyword = "";
+                }
+
+                List<Doctor> result = dao.search(keyword);
+
+                request.setAttribute("listDoctor", result);
+                request.setAttribute("keyword", keyword);
+
+                request.getRequestDispatcher("/doctor.jsp")
+                        .forward(request, response);
+
                 break;
-        }
+
+            //================ OPEN ADD FORM =================
+            case "add":
+
+                request.getRequestDispatcher("/doctor-form.jsp")
+                        .forward(request, response);
+
+                break;
+
+            //================ OPEN EDIT FORM =================
+            case "edit":
+
+                try {
+
+                    int id = Integer.parseInt(request.getParameter("id"));
+
+                    Doctor doctor = dao.getById(id);
+
+                    request.setAttribute("doctor", doctor);
+
+                    request.getRequestDispatcher("/doctor-form.jsp")
+                            .forward(request, response);
+
+                } catch (Exception e) {
+
+                    response.sendRedirect("doctor?action=list");
+
+                }
+
+                break;
+
+            default:
+
+                response.sendRedirect("doctor?action=list");
+
+                break;
+        } 
     
     } 
 
@@ -91,7 +166,96 @@ public class DoctorServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        processRequest(request, response);
+        DoctorDAO dao = new DoctorDAO();
+         String action = request.getParameter("action");
+
+        if (action == null) {
+            action = "";
+        }
+
+        switch (action) {
+
+            //================ INSERT =================
+            case "insert":
+
+                try {
+
+                    String fullName = request.getParameter("fullName");
+                    String specialization = request.getParameter("specialization");
+                    String phone = request.getParameter("phone");
+                    int departmentID = Integer.parseInt(request.getParameter("departmentID"));
+
+                    Doctor d = new Doctor();
+
+                    d.setFullName(fullName);
+                    d.setSpecialization(specialization);
+                    d.setPhone(phone);
+                    d.setDepartmentID(departmentID);
+
+                    dao.insert(d);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                response.sendRedirect("doctor?action=list");
+
+                break;
+
+            //================ UPDATE =================
+            case "update":
+
+                try {
+
+                    int doctorID = Integer.parseInt(request.getParameter("doctorID"));
+
+                    String fullName = request.getParameter("fullName");
+                    String specialization = request.getParameter("specialization");
+                    String phone = request.getParameter("phone");
+                    int departmentID = Integer.parseInt(request.getParameter("departmentID"));
+
+                    Doctor d = new Doctor();
+
+                    d.setDoctorID(doctorID);
+                    d.setFullName(fullName);
+                    d.setSpecialization(specialization);
+                    d.setPhone(phone);
+                    d.setDepartmentID(departmentID);
+
+                    dao.update(d);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                response.sendRedirect("doctor?action=list");
+
+                break;
+
+            //================ DELETE =================
+            case "delete":
+
+                try {
+
+                    int id = Integer.parseInt(request.getParameter("id"));
+
+                    dao.delete(id);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                response.sendRedirect("doctor?action=list");
+
+                break;
+
+            default:
+
+                response.sendRedirect("doctor?action=list");
+
+                break;
+        }
+
     }
 
     /** 
@@ -100,7 +264,7 @@ public class DoctorServlet extends HttpServlet {
      */
     @Override
     public String getServletInfo() {
-        return "Short description";
+        return "Doctor Servlet";
     }// </editor-fold>
 
 }
