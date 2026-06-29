@@ -28,6 +28,10 @@
         <servlet-name>DashboardServlet</servlet-name>
         <servlet-class>controller.DashboardServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>DoctorServlet</servlet-name>
+        <servlet-class>controller.DoctorServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>PatientServlet</servlet-name>
         <url-pattern>/patient</url-pattern>
@@ -47,5 +51,9 @@
     <servlet-mapping>
         <servlet-name>DashboardServlet</servlet-name>
         <url-pattern>/dashboard</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DoctorServlet</servlet-name>
+        <url-pattern>/doctor</url-pattern>
     </servlet-mapping>
 </web-app>

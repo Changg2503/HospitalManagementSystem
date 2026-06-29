@@ -103,26 +103,30 @@ public class AuthorizationFilter implements Filter {
         HttpServletResponse res
                 = (HttpServletResponse) response;
 
-        String url
-                = req.getRequestURI();
+        String url = req.getRequestURI();
 
+        // ==========================
+        // Các trang không cần login
+        // ==========================
         if (url.contains("login")
                 || url.contains("css")
                 || url.contains("js")
                 || url.contains("images")) {
 
-            chain.doFilter(
-                    request,
-                    response);
-
+            chain.doFilter(request, response);
             return;
         }
 
+        // ==========================
+        // Kiểm tra Session
+        // ==========================
         HttpSession session
                 = req.getSession(false);
 
         if (session == null) {
-            res.sendRedirect("login");
+            res.sendRedirect(
+                    req.getContextPath()
+                    + "/login");
             return;
         }
 
@@ -131,29 +135,67 @@ public class AuthorizationFilter implements Filter {
                         .getAttribute("ACCOUNT");
 
         if (acc == null) {
-            res.sendRedirect("login");
+            res.sendRedirect(
+                    req.getContextPath()
+                    + "/login");
             return;
         }
 
         String role = acc.getRole();
 
-        if (url.contains("/report")
+        // ==========================
+        // ADMIN ONLY
+        // ==========================
+        if ((url.contains("/report")
+                || url.contains("/dashboard")
+                || url.contains("/department"))
                 && !role.equals("Admin")) {
 
-            res.sendRedirect("login");
+            res.sendRedirect(
+                    req.getContextPath()
+                    + "/login");
             return;
         }
 
+        // ==========================
+        // DOCTOR + ADMIN
+        // ==========================
+        if (url.contains("/doctor")
+                && !role.equals("Doctor")
+                && !role.equals("Admin")) {
+
+            res.sendRedirect(
+                    req.getContextPath()
+                    + "/login");
+            return;
+        }
+
+        // ==========================
+        // PATIENT + ADMIN
+        // ==========================
+        if (url.contains("/patient")
+                && !role.equals("Patient")
+                && !role.equals("Admin")) {
+
+            res.sendRedirect(
+                    req.getContextPath()
+                    + "/login");
+            return;
+        }
+
+        // ==========================
+        // Nếu qua được tất cả kiểm tra
+        // ==========================
         chain.doFilter(
                 request,
                 response);
 
-    }
+}
 
-    /**
-     * Return the filter configuration object for this filter.
-     */
-    public FilterConfig getFilterConfig() {
+/**
+ * Return the filter configuration object for this filter.
+ */
+public FilterConfig getFilterConfig() {
         return (this.filterConfig);
     }
 
@@ -188,7 +230,7 @@ public class AuthorizationFilter implements Filter {
      * Return a String representation of this object.
      */
     @Override
-    public String toString() {
+public String toString() {
         if (filterConfig == null) {
             return ("AuthorizationFilter()");
         }

@@ -53,7 +53,32 @@ public class PatientServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        processRequest(request, response);
+         String action =
+                request.getParameter(
+                        "action");
+
+        if (action == null) {
+            action = "list";
+        }
+
+        switch (action) {
+
+            case "home":
+                request.getRequestDispatcher(
+                        "jsp/patient/home.jsp")
+                        .forward(request,
+                                response);
+                break;
+
+            case "list":
+                // code list patient
+                break;
+
+            case "create":
+                // code create
+                break;
+        }
+    
     } 
 
     /** 

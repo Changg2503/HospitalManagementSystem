@@ -75,23 +75,39 @@ public class LoginServlet extends HttpServlet {
         String username = request.getParameter("username");
 
         String password = request.getParameter("password");
-              
+
         AccountDAO dao = new AccountDAO();
 
-        Account acc = dao.login(username,password);
+        Account acc = dao.login(username, password);
 
         if (acc == null) {
 
-            request.setAttribute("ERROR","Username or Password incorrect!");
+            request.setAttribute("ERROR", "Username or Password incorrect!");
 
-            request.getRequestDispatcher( "jsp/login.jsp").forward(request,response);
+            request.getRequestDispatcher("jsp/login.jsp").forward(request, response);
 
             return;
         }
         HttpSession session = request.getSession();
 
-        session.setAttribute("ACCOUNT",acc);
+        session.setAttribute("ACCOUNT", acc);
 
+        String role = acc.getRole();
+
+        if (role.equals("Admin")) {
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/dashboard");
+        } else if (role.equals("Doctor")) {
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/doctor?action=home");
+        } else if (role.equals("Patient")) {
+            response.sendRedirect(
+                    request.getContextPath()
+                    + "/patient?action=home");
+        }
+/*
         switch (acc.getRole()) {
 
             case "Admin":
@@ -108,7 +124,7 @@ public class LoginServlet extends HttpServlet {
 
             default:
                 response.sendRedirect("login");
-        }
+        }*/
     }
 
     /**
