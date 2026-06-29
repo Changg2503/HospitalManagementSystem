@@ -49,6 +49,39 @@ public class DoctorDAO extends DBContext{
 }
    
     
+    //Lấy theo ID
+    
+    public Doctor getById(int id){
+
+    String sql = "SELECT * FROM Doctor WHERE DoctorID=?";
+
+    try{
+
+        PreparedStatement st = connection.prepareStatement(sql);
+
+        st.setInt(1,id);
+
+        ResultSet rs = st.executeQuery();
+
+        if(rs.next()){
+
+            return new Doctor(
+                    rs.getInt("DoctorID"),
+                    rs.getString("FullName"),
+                    rs.getString("Specialization"),
+                    rs.getString("Phone"),
+                    rs.getInt("DepartmentID")
+            );
+        }
+
+    }catch(Exception e){
+        e.printStackTrace();
+    }
+
+    return null;
+}
+
+    
     
 //INSERT DOCTOR
     public void insertDoctor(Doctor d){
@@ -120,5 +153,106 @@ public class DoctorDAO extends DBContext{
         st.executeUpdate();
 
     }catch(Exception e){}
+}
+    
+    //Phân trang 
+    public List<Doctor> paging(int index){
+
+    List<Doctor> list = new ArrayList<>();
+
+    String sql =
+        "SELECT * FROM Doctor "
+      + "ORDER BY DoctorID "
+      + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+    try{
+
+        PreparedStatement st = connection.prepareStatement(sql);
+
+        st.setInt(1,(index-1)*5);
+        st.setInt(2,5);
+
+        ResultSet rs = st.executeQuery();
+
+        while(rs.next()){
+
+            list.add(new Doctor(
+                    rs.getInt("DoctorID"),
+                    rs.getString("FullName"),
+                    rs.getString("Specialization"),
+                    rs.getString("Phone"),
+                    rs.getInt("DepartmentID")
+            ));
+        }
+
+    }catch(Exception e){
+        e.printStackTrace();
+    }
+
+    return list;
+}
+    
+    
+    
+    
+//SEARCH DOCTOR
+    public List<Doctor> search(String keyword){
+
+    List<Doctor> list = new ArrayList<>();
+
+        String sql
+                = "SELECT * FROM Doctor "
+                + "WHERE FullName LIKE ? "
+                + "OR CAST(DoctorID AS VARCHAR) LIKE ? ";
+
+    try{
+
+        PreparedStatement st = connection.prepareStatement(sql);
+
+        st.setString(1,"%"+keyword+"%");
+        st.setString(2,"%"+keyword+"%");
+
+        ResultSet rs = st.executeQuery();
+
+        while(rs.next()){
+
+            list.add(new Doctor(
+                    rs.getInt("DoctorID"),
+                    rs.getString("FullName"),
+                    rs.getString("Specialization"),
+                    rs.getString("Phone"),
+                    rs.getInt("DepartmentID")
+            ));
+        }
+
+    }catch(Exception e){
+        e.printStackTrace();
+    }
+
+    return list;
+}
+    
+   
+    
+//ĐẾM SỐ DOCTOR
+    public int getTotal(){
+
+    String sql = "SELECT COUNT(*) FROM Doctor";
+
+    try{
+
+        PreparedStatement st = connection.prepareStatement(sql);
+
+        ResultSet rs = st.executeQuery();
+
+        if(rs.next()){
+            return rs.getInt(1);
+        }
+
+    }catch(Exception e){
+        e.printStackTrace();
+    }
+
+    return 0;
 }
 }
