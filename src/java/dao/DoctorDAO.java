@@ -19,7 +19,7 @@ public class DoctorDAO extends DBContext{
     
     
 //LẤY DANH SÁCH BÁC SĨ
-    public List<Doctor> getAllDoctors(){
+    public List<Doctor> getAll(){
 
     List<Doctor> list = new ArrayList<>();
 
@@ -84,7 +84,7 @@ public class DoctorDAO extends DBContext{
     
     
 //INSERT DOCTOR
-    public void insertDoctor(Doctor d){
+    public void insert(Doctor d){
 
     String sql=
     "INSERT INTO Doctor"
@@ -108,7 +108,7 @@ public class DoctorDAO extends DBContext{
     
     
 //UPDATE DOCTOR
-    public void updateDoctor(Doctor d){
+    public void update(Doctor d){
 
     String sql=
     "UPDATE Doctor "
@@ -138,7 +138,7 @@ public class DoctorDAO extends DBContext{
     
 
 //DELETE DOCTOR
-    public void deleteDoctor(int id){
+    public void delete(int id){
 
     String sql=
     "DELETE FROM Doctor WHERE DoctorID=?";
