@@ -3,6 +3,7 @@ package dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+
 import model.Department;
 import utils.DBContext;
 
@@ -15,15 +16,19 @@ public class DepartmentDAO extends DBContext {
         String sql = "SELECT * FROM Department";
 
         try {
-            PreparedStatement ps = connection.prepareStatement(sql);
+
+            PreparedStatement ps =
+                    connection.prepareStatement(sql);
+
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
 
-                Department d = new Department(
-                        rs.getInt("DepartmentID"),
-                        rs.getString("DepartmentName")
-                );
+                Department d =
+                        new Department(
+                                rs.getInt("DepartmentID"),
+                                rs.getString("DepartmentName")
+                        );
 
                 list.add(d);
             }
@@ -37,11 +42,13 @@ public class DepartmentDAO extends DBContext {
 
     public Department getDepartmentById(int id) {
 
-        String sql = "SELECT * FROM Department WHERE DepartmentID=?";
+        String sql =
+                "SELECT * FROM Department WHERE DepartmentID=?";
 
         try {
 
-            PreparedStatement ps = connection.prepareStatement(sql);
+            PreparedStatement ps =
+                    connection.prepareStatement(sql);
 
             ps.setInt(1, id);
 
@@ -62,7 +69,7 @@ public class DepartmentDAO extends DBContext {
         return null;
     }
 
-    public void addDepartment(String name) {
+    public void addDepartment(Department d) {
 
         String sql =
                 "INSERT INTO Department(DepartmentName) VALUES(?)";
@@ -72,7 +79,7 @@ public class DepartmentDAO extends DBContext {
             PreparedStatement ps =
                     connection.prepareStatement(sql);
 
-            ps.setString(1, name);
+            ps.setString(1, d.getDepartmentName());
 
             ps.executeUpdate();
 
@@ -81,7 +88,7 @@ public class DepartmentDAO extends DBContext {
         }
     }
 
-    public void updateDepartment(int id, String name) {
+    public void updateDepartment(Department d) {
 
         String sql =
                 "UPDATE Department "
@@ -93,8 +100,9 @@ public class DepartmentDAO extends DBContext {
             PreparedStatement ps =
                     connection.prepareStatement(sql);
 
-            ps.setString(1, name);
-            ps.setInt(2, id);
+            ps.setString(1, d.getDepartmentName());
+
+            ps.setInt(2, d.getDepartmentID());
 
             ps.executeUpdate();
 
@@ -105,7 +113,8 @@ public class DepartmentDAO extends DBContext {
 
     public void deleteDepartment(int id) {
 
-        String sql = "DELETE FROM Department WHERE DepartmentID=?";
+        String sql =
+                "DELETE FROM Department WHERE DepartmentID=?";
 
         try {
 

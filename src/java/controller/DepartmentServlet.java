@@ -4,7 +4,7 @@
  */
 package controller;
 
-import dao.AppointmentDAO;
+import dao.DepartmentDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -12,13 +12,14 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import model.Department;
 
 /**
  *
  * @author admin
  */
-@WebServlet(name = "AppointmentDeleteServlet", urlPatterns = {"/appointmentdelete"})
-public class AppointmentDeleteServlet extends HttpServlet {
+@WebServlet(name = "DepartmentServlet", urlPatterns = {"/department"})
+public class DepartmentServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -37,10 +38,10 @@ public class AppointmentDeleteServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet AppointmentDeleteServlet</title>");
+            out.println("<title>Servlet DepartmentServlet</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet AppointmentDeleteServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet DepartmentServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -56,21 +57,55 @@ public class AppointmentDeleteServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doGet(
-            HttpServletRequest request,
-            HttpServletResponse response)
-            throws IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        DepartmentDAO dao = new DepartmentDAO();
+        String action = request.getParameter("action");
 
-        int id
-                = Integer.parseInt(
-                        request.getParameter("id"));
+        // Display department list
+        if (action == null) {
 
-        AppointmentDAO dao
-                = new AppointmentDAO();
+            request.setAttribute(
+                    "list",
+                    dao.getAllDepartment());
 
-        dao.deleteAppointment(id);
+            request.getRequestDispatcher(
+                    "department-list.jsp")
+                    .forward(request, response);
+        } 
+        
+        // Open create form
+        else if (action.equals("create")) {
 
-        response.sendRedirect("appointment");
+            request.getRequestDispatcher(
+                    "department-form.jsp")
+                    .forward(request, response);
+        } 
+
+        // Open update form
+        else if (action.equals("edit")) {
+
+            int id = Integer.parseInt( request.getParameter("id"));
+
+            Department d = dao.getDepartmentById(id);
+
+            request.setAttribute("d", d);
+
+            request.getRequestDispatcher(
+                    "department-form.jsp")
+                    .forward(request, response);
+        } 
+        
+        // Delete department
+        else if (action.equals("delete")) {
+
+            int id = Integer.parseInt(
+                    request.getParameter("id"));
+
+            dao.deleteDepartment(id);
+
+            response.sendRedirect("department");
+        }
     }
 
     /**
@@ -84,7 +119,37 @@ public class AppointmentDeleteServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        DepartmentDAO dao = new DepartmentDAO();
+
+        String id = request.getParameter("id");
+
+        String name = request.getParameter("name");
+
+        // Add new department
+        if (id == null || id.isEmpty()) {
+
+            Department d
+                    = new Department();
+
+            d.setDepartmentName(name);
+
+            dao.addDepartment(d);
+        } // Update department
+        else {
+
+            Department d
+                    = new Department();
+
+            d.setDepartmentID(
+                    Integer.parseInt(id));
+
+            d.setDepartmentName(name);
+
+            dao.updateDepartment(d);
+        }
+
+        response.sendRedirect("department");
+
     }
 
     /**

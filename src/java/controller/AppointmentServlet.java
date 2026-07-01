@@ -1,8 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
-
 package controller;
 
 import dao.AppointmentDAO;
@@ -13,13 +8,14 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import model.Appointment;
 
 /**
  *
  * @author admin
  */
-@WebServlet(name="AppointmentListServlet", urlPatterns={"/appointmentlist"})
-public class AppointmentListServlet extends HttpServlet {
+@WebServlet(name="AppointmentServlet", urlPatterns={"/appointment"})
+public class AppointmentServlet extends HttpServlet {
    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -36,10 +32,10 @@ public class AppointmentListServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet AppointmentListServlet</title>");  
+            out.println("<title>Servlet AppointmentServlet</title>");  
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet AppointmentListServlet at " + request.getContextPath () + "</h1>");
+            out.println("<h1>Servlet AppointmentServlet at " + request.getContextPath () + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -54,21 +50,55 @@ public class AppointmentListServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-     protected void doGet(
-            HttpServletRequest request,
-            HttpServletResponse response)
-            throws ServletException, IOException {
-
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    throws ServletException, IOException {
+        
         AppointmentDAO dao = new AppointmentDAO();
 
-        request.setAttribute(
-                "list",
-                dao.getAllAppointment());
+        String action = request.getParameter("action");
 
-        request.getRequestDispatcher(
-                "/jsp/appointment/appointment-list.jsp")
-                .forward(request, response);
-    }
+        // Display appointment list
+        if (action == null) {
+
+            request.setAttribute(
+                    "list",
+                    dao.getAllAppointment());
+
+            request.getRequestDispatcher(
+                    "appointment-list.jsp")
+                    .forward(request, response);
+        }
+
+        // Open create form
+        else if ("create".equals(action)) {
+
+            request.getRequestDispatcher(
+                    "appointment-form.jsp")
+                    .forward(request, response);
+        }
+
+        // Cancel appointment
+        else if ("cancel".equals(action)) {
+
+            int id = Integer.parseInt(
+                    request.getParameter("id"));
+
+            dao.updateStatus(id, "Cancelled");
+
+            response.sendRedirect("appointment");
+        }
+
+        // Mark appointment as completed
+        else if ("complete".equals(action)) {
+
+            int id = Integer.parseInt(
+                    request.getParameter("id"));
+
+            dao.updateStatus(id, "Completed");
+
+            response.sendRedirect("appointment");
+        }
+    } 
 
     /** 
      * Handles the HTTP <code>POST</code> method.
@@ -80,7 +110,33 @@ public class AppointmentListServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        processRequest(request, response);
+        
+        AppointmentDAO dao = new AppointmentDAO();
+
+        int patientID =
+                Integer.parseInt(
+                        request.getParameter("patientID"));
+
+        int doctorID =
+                Integer.parseInt(
+                        request.getParameter("doctorID"));
+
+        String appointmentDate =
+                request.getParameter("appointmentDate");
+
+        Appointment a = new Appointment();
+
+        a.setPatientID(patientID);
+        a.setDoctorID(doctorID);
+        a.setAppointmentDate(appointmentDate);
+
+        // Default status when creating appointment
+        a.setStatus("Pending");
+
+        dao.addAppointment(a);
+
+        response.sendRedirect("appointment");
+    
     }
 
     /** 
