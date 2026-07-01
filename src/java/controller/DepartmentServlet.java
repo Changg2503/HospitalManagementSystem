@@ -12,6 +12,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
 import model.Department;
 
 /**
@@ -62,45 +63,61 @@ public class DepartmentServlet extends HttpServlet {
         DepartmentDAO dao = new DepartmentDAO();
         String action = request.getParameter("action");
 
-        // Display department list
+        //================ LIST + PAGINATION =================
         if (action == null) {
 
-            request.setAttribute(
-                    "list",
-                    dao.getAllDepartment());
+            int index = 1;
+
+            String page
+                    = request.getParameter("page");
+
+            if (page != null) {
+                index = Integer.parseInt(page);
+            }
+
+            List<Department> list
+                    = dao.paging(index);
+
+            int count
+                    = dao.getTotalDepartment();
+
+            int endPage = count / 5;
+
+            if (count % 5 != 0) {
+                endPage++;
+            }
+
+            request.setAttribute("list", list);
+            request.setAttribute("endPage", endPage);
 
             request.getRequestDispatcher(
                     "department-list.jsp")
                     .forward(request, response);
-        } 
-        
-        // Open create form
-        else if (action.equals("create")) {
+        } //================ OPEN CREATE FORM =================
+        else if ("create".equals(action)) {
 
             request.getRequestDispatcher(
                     "department-form.jsp")
                     .forward(request, response);
-        } 
 
-        // Open update form
-        else if (action.equals("edit")) {
+        } //================ OPEN UPDATE FORM =================
+        else if ("edit".equals(action)) {
 
             int id = Integer.parseInt( request.getParameter("id"));
 
-            Department d = dao.getDepartmentById(id);
+            Department d
+                    = dao.getDepartmentById(id);
 
             request.setAttribute("d", d);
 
             request.getRequestDispatcher(
                     "department-form.jsp")
                     .forward(request, response);
-        } 
-        
-        // Delete department
-        else if (action.equals("delete")) {
 
-            int id = Integer.parseInt(
-                    request.getParameter("id"));
+        } //================ DELETE DEPARTMENT =================
+        else if ("delete".equals(action)) {
+
+            int id = Integer.parseInt( request.getParameter("id"));
 
             dao.deleteDepartment(id);
 
@@ -125,7 +142,7 @@ public class DepartmentServlet extends HttpServlet {
 
         String name = request.getParameter("name");
 
-        // Add new department
+        //================ CREATE DEPARTMENT =================
         if (id == null || id.isEmpty()) {
 
             Department d
@@ -134,7 +151,9 @@ public class DepartmentServlet extends HttpServlet {
             d.setDepartmentName(name);
 
             dao.addDepartment(d);
-        } // Update department
+        }   
+            
+         //================ UPDATE DEPARTMENT =================
         else {
 
             Department d
@@ -149,7 +168,6 @@ public class DepartmentServlet extends HttpServlet {
         }
 
         response.sendRedirect("department");
-
     }
 
     /**
