@@ -18,8 +18,8 @@ public class AppointmentDAO extends DBContext {
 
         try {
 
-            PreparedStatement ps =
-                    connection.prepareStatement(sql);
+            PreparedStatement ps
+                    = connection.prepareStatement(sql);
 
             ResultSet rs = ps.executeQuery();
 
@@ -55,15 +55,15 @@ public class AppointmentDAO extends DBContext {
     // Add appointment
     public void addAppointment(Appointment a) {
 
-        String sql =
-                "INSERT INTO Appointment "
+        String sql
+                = "INSERT INTO Appointment "
                 + "(PatientID, DoctorID, AppointmentDate, Status) "
                 + "VALUES (?, ?, ?, ?)";
 
         try {
 
-            PreparedStatement ps =
-                    connection.prepareStatement(sql);
+            PreparedStatement ps
+                    = connection.prepareStatement(sql);
 
             ps.setInt(1, a.getPatientID());
             ps.setInt(2, a.getDoctorID());
@@ -77,18 +77,51 @@ public class AppointmentDAO extends DBContext {
         }
     }
 
+    public Appointment getAppointmentById(int id) {
+        String sql = """
+                 SELECT *
+                 FROM Appointment
+                 WHERE AppointmentID = ?
+                 """;
+
+        try {
+            PreparedStatement ps
+                    = connection.prepareStatement(sql);
+
+            ps.setInt(1, id);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+
+                return new Appointment(
+                        rs.getInt("AppointmentID"),
+                        rs.getInt("PatientID"),
+                        rs.getInt("DoctorID"),
+                        rs.getString("AppointmentDate"),
+                        rs.getString("Status")
+                );
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     // Update status
     public void updateStatus(int id, String status) {
 
-        String sql =
-                "UPDATE Appointment "
+        String sql
+                = "UPDATE Appointment "
                 + "SET Status=? "
                 + "WHERE AppointmentID=?";
 
         try {
 
-            PreparedStatement ps =
-                    connection.prepareStatement(sql);
+            PreparedStatement ps
+                    = connection.prepareStatement(sql);
 
             ps.setString(1, status);
             ps.setInt(2, id);
@@ -101,72 +134,72 @@ public class AppointmentDAO extends DBContext {
     }
 
     // COUNT TOTAL APPOINTMENTS 
-public int getTotalAppointment() {
+    public int getTotalAppointment() {
 
-    String sql = "SELECT COUNT(*) FROM Appointment";
+        String sql = "SELECT COUNT(*) FROM Appointment";
 
-    try {
+        try {
 
-        PreparedStatement st =
-                connection.prepareStatement(sql);
+            PreparedStatement st
+                    = connection.prepareStatement(sql);
 
-        ResultSet rs = st.executeQuery();
+            ResultSet rs = st.executeQuery();
 
-        if (rs.next()) {
-            return rs.getInt(1);
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
+        return 0;
     }
-
-    return 0;
-}
 
 // PAGINATION 
-public List<Appointment> paging(int index) {
+    public List<Appointment> paging(int index) {
 
-    List<Appointment> list = new ArrayList<>();
+        List<Appointment> list = new ArrayList<>();
 
-    String sql = "SELECT * FROM Appointment "
-            + "ORDER BY AppointmentID "
-            + "OFFSET ? ROWS FETCH NEXT 5 ROWS ONLY";
+        String sql = "SELECT * FROM Appointment "
+                + "ORDER BY AppointmentID "
+                + "OFFSET ? ROWS FETCH NEXT 5 ROWS ONLY";
 
-    try {
+        try {
 
-        PreparedStatement st =
-                connection.prepareStatement(sql);
+            PreparedStatement st
+                    = connection.prepareStatement(sql);
 
-        st.setInt(1, (index - 1) * 5);
+            st.setInt(1, (index - 1) * 5);
 
-        ResultSet rs = st.executeQuery();
+            ResultSet rs = st.executeQuery();
 
-        while (rs.next()) {
+            while (rs.next()) {
 
-            Appointment a = new Appointment();
+                Appointment a = new Appointment();
 
-            a.setAppointmentID(
-                    rs.getInt("AppointmentID"));
+                a.setAppointmentID(
+                        rs.getInt("AppointmentID"));
 
-            a.setPatientID(
-                    rs.getInt("PatientID"));
+                a.setPatientID(
+                        rs.getInt("PatientID"));
 
-            a.setDoctorID(
-                    rs.getInt("DoctorID"));
+                a.setDoctorID(
+                        rs.getInt("DoctorID"));
 
-            a.setAppointmentDate(
-                    rs.getString("AppointmentDate"));
+                a.setAppointmentDate(
+                        rs.getString("AppointmentDate"));
 
-            a.setStatus(
-                    rs.getString("Status"));
+                a.setStatus(
+                        rs.getString("Status"));
 
-            list.add(a);
+                list.add(a);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
+        return list;
     }
-
-    return list;
-}
 }

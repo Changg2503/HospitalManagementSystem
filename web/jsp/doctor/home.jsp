@@ -3,36 +3,26 @@
     Created on : Jun 29, 2026, 4:41:03 PM
     Author     : Nguyen Trang
 --%>
+<jsp:include page="../common/header.jsp"/>
+<jsp:include page="../common/sidebar.jsp"/>
 
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>JSP Page</title>
-    </head>
-    <body>
-        <h1>Doctor Page</h1>
+<div class="content">
 
-        Welcome:
-        ${sessionScope.ACCOUNT.username}
+    <h2>Doctor Dashboard</h2>
 
-        <br>
+    <div class="card-box mt-4">
 
-        <a href="appointment">
-            Manage Appointment
-        </a>
+        <h4>
+            Welcome,
+            ${sessionScope.account.username}
+        </h4>
 
-        <br>
+        <p>
+            You are logged in as Doctor.
+        </p>
 
-        <a href="medicalrecord">
-            Medical Record
-        </a>
+    </div>
 
-        <br>
+</div>
 
-        <a href="logout">
-            Logout
-        </a>
-    </body>
-</html>
+<jsp:include page="../common/footer.jsp"/>

@@ -65,6 +65,9 @@ public class DepartmentServlet extends HttpServlet {
 
         //================ LIST + PAGINATION =================
         if (action == null) {
+            action = "list";
+        }
+        if ("list".equals(action)) {
 
             int index = 1;
 
@@ -91,19 +94,19 @@ public class DepartmentServlet extends HttpServlet {
             request.setAttribute("endPage", endPage);
 
             request.getRequestDispatcher(
-                    "department-list.jsp")
+                    "jsp/department/list.jsp")
                     .forward(request, response);
         } //================ OPEN CREATE FORM =================
-        else if ("create".equals(action)) {
+        else if ("add".equals(action)) {
 
             request.getRequestDispatcher(
-                    "department-form.jsp")
+                    "jsp/department/form.jsp")
                     .forward(request, response);
 
         } //================ OPEN UPDATE FORM =================
         else if ("edit".equals(action)) {
 
-            int id = Integer.parseInt( request.getParameter("id"));
+            int id = Integer.parseInt(request.getParameter("id"));
 
             Department d
                     = dao.getDepartmentById(id);
@@ -111,13 +114,13 @@ public class DepartmentServlet extends HttpServlet {
             request.setAttribute("d", d);
 
             request.getRequestDispatcher(
-                    "department-form.jsp")
+                    "jsp/department/form.jsp")
                     .forward(request, response);
 
         } //================ DELETE DEPARTMENT =================
         else if ("delete".equals(action)) {
 
-            int id = Integer.parseInt( request.getParameter("id"));
+            int id = Integer.parseInt(request.getParameter("id"));
 
             dao.deleteDepartment(id);
 
@@ -151,9 +154,7 @@ public class DepartmentServlet extends HttpServlet {
             d.setDepartmentName(name);
 
             dao.addDepartment(d);
-        }   
-            
-         //================ UPDATE DEPARTMENT =================
+        } //================ UPDATE DEPARTMENT =================
         else {
 
             Department d

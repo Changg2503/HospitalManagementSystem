@@ -32,6 +32,14 @@
         <servlet-name>DoctorServlet</servlet-name>
         <servlet-class>controller.DoctorServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>RegisterServlet</servlet-name>
+        <servlet-class>controller.RegisterServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>MedicalRecordServlet</servlet-name>
+        <servlet-class>controller.MedicalRecordServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>PatientServlet</servlet-name>
         <url-pattern>/patient</url-pattern>
@@ -55,5 +63,13 @@
     <servlet-mapping>
         <servlet-name>DoctorServlet</servlet-name>
         <url-pattern>/doctor</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RegisterServlet</servlet-name>
+        <url-pattern>/register</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MedicalRecordServlet</servlet-name>
+        <url-pattern>/medicalRecord</url-pattern>
     </servlet-mapping>
 </web-app>

@@ -94,7 +94,7 @@ public class PatientServlet extends HttpServlet {
                 request.setAttribute("currentPage", page);
                 request.setAttribute("endPage", endPage);
 
-                request.getRequestDispatcher("/patient.jsp")
+                request.getRequestDispatcher("jsp/patient/list.jsp")
                         .forward(request, response);
 
                 break;
@@ -113,7 +113,7 @@ public class PatientServlet extends HttpServlet {
                 request.setAttribute("listPatient", result);
                 request.setAttribute("keyword", keyword);
 
-                request.getRequestDispatcher("/patient.jsp")
+                request.getRequestDispatcher("jsp/patient/list.jsp")
                         .forward(request, response);
 
                 break;
@@ -121,7 +121,7 @@ public class PatientServlet extends HttpServlet {
             //================ OPEN ADD FORM =================
             case "add":
 
-                request.getRequestDispatcher("/patient-form.jsp")
+                request.getRequestDispatcher("jsp/patient/form.jsp")
                         .forward(request, response);
 
                 break;
@@ -137,7 +137,7 @@ public class PatientServlet extends HttpServlet {
 
                     request.setAttribute("patient", patient);
 
-                    request.getRequestDispatcher("/patient-form.jsp")
+                    request.getRequestDispatcher("jsp/patient/form.jsp")
                             .forward(request, response);
 
                 } catch (Exception e) {

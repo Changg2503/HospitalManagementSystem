@@ -12,30 +12,43 @@ import java.util.Date;
  */
 public class Patient {
     private int patientID;
+    private int accountID;
     private String fullName;
     private String gender;
     private Date dob;
     private String phone;
+    private String email;
     private String address;
-
+    
     public Patient() {
     }
 
-    public Patient(int patientID, String fullName, String gender, Date dob, String phone, String address) {
+    public Patient(int patientID, int accountID, String fullName, String gender, Date dob, String phone, String email, String address) {
         this.patientID = patientID;
+        this.accountID = accountID;
         this.fullName = fullName;
         this.gender = gender;
         this.dob = dob;
         this.phone = phone;
+        this.email = email;
         this.address = address;
     }
 
+    
     public int getPatientID() {
         return patientID;
     }
 
     public void setPatientID(int patientID) {
         this.patientID = patientID;
+    }
+
+    public int getAccountID() {
+        return accountID;
+    }
+
+    public void setAccountID(int accountID) {
+        this.accountID = accountID;
     }
 
     public String getFullName() {
@@ -70,6 +83,14 @@ public class Patient {
         this.phone = phone;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    
     public String getAddress() {
         return address;
     }
@@ -82,6 +103,5 @@ public class Patient {
     public String toString() {
         return "Patient{" + "patientID=" + patientID + ", fullName=" + fullName + ", gender=" + gender + ", dob=" + dob + ", phone=" + phone + ", address=" + address + '}';
     }
-    
-    
+
 }

@@ -17,231 +17,251 @@ import java.sql.ResultSet;
  * @author Nguyen Trang
  */
 public class PatientDAO extends DBContext {
-    
-    
+
     public List<Patient> getAll() {
 
-    List<Patient> list = new ArrayList<>();
+        List<Patient> list = new ArrayList<>();
 
-    String sql = "SELECT * FROM Patient";
+        String sql = "SELECT * FROM Patient";
 
-    try {
+        try {
 
-        PreparedStatement st = connection.prepareStatement(sql);
+            PreparedStatement st = connection.prepareStatement(sql);
 
-        ResultSet rs = st.executeQuery();
+            ResultSet rs = st.executeQuery();
 
-        while(rs.next()){
+            while (rs.next()) {
 
-            Patient p = new Patient(
-                    rs.getInt("PatientID"),
-                    rs.getString("FullName"),
-                    rs.getString("Gender"),
-                    rs.getDate("DOB"),
-                    rs.getString("Phone"),
-                    rs.getString("Address"));
+                Patient p = new Patient(
+                        rs.getInt("PatientID"),
+                        rs.getInt("AccountID"),
+                        rs.getString("FullName"),
+                        rs.getString("Gender"),
+                        rs.getDate("DOB"),
+                        rs.getString("Phone"),
+                        rs.getString("Email"),
+                        rs.getString("Address"));
 
-            list.add(p);
+                list.add(p);
+            }
+
+        } catch (Exception e) {
         }
 
-    } catch (Exception e) {
+        return list;
     }
-
-    return list;
-}
 //Lấy theo ID
-public Patient getById(int id){
 
-    String sql =
-    "SELECT * FROM Patient WHERE PatientID=?";
+    public Patient getById(int id) {
 
-    try{
+        String sql
+                = "SELECT * FROM Patient WHERE PatientID=?";
 
-        PreparedStatement st =
-        connection.prepareStatement(sql);
+        try {
 
-        st.setInt(1,id);
+            PreparedStatement st
+                    = connection.prepareStatement(sql);
 
-        ResultSet rs=st.executeQuery();
+            st.setInt(1, id);
 
-        if(rs.next()){
+            ResultSet rs = st.executeQuery();
 
-            return new Patient(
-                    rs.getInt("PatientID"),
-                    rs.getString("FullName"),
-                    rs.getString("Gender"),
-                    rs.getDate("DOB"),
-                    rs.getString("Phone"),
-                    rs.getString("Address"));
+            if (rs.next()) {
+
+                return new Patient(
+                        rs.getInt("PatientID"),
+                        rs.getInt("AccountID"),
+                        rs.getString("FullName"),
+                        rs.getString("Gender"),
+                        rs.getDate("DOB"),
+                        rs.getString("Phone"),
+                        rs.getString("Email"),
+                        rs.getString("Address"));
+            }
+
+        } catch (Exception e) {
         }
 
-    }catch(Exception e){}
-
-    return null;
-}
+        return null;
+    }
 //Insert
-public void insert(Patient p){
 
-    String sql=
-    "INSERT INTO Patient(FullName,Gender,DOB,Phone,Address)"
-            + " VALUES(?,?,?,?,?)";
+    public void insert(Patient p) {
 
-    try{
+        String sql
+                = "INSERT INTO Patient\n"
+                + "(AccountID,FullName,Gender,DOB,Phone,Email,Address)\n"
+                + "VALUES (?,?,?,?,?,?,?)";
 
-        PreparedStatement st=
-        connection.prepareStatement(sql);
+        try {
 
-        st.setString(1,p.getFullName());
-        st.setString(2,p.getGender());
-        st.setDate(3, (Date) p.getDob());
-        st.setString(4,p.getPhone());
-        st.setString(5,p.getAddress());
+            PreparedStatement st
+                    = connection.prepareStatement(sql);
 
-        st.executeUpdate();
+            st.setInt(1, p.getAccountID());
+            st.setString(2, p.getFullName());
+            st.setString(3, p.getGender());
+            st.setDate(4, new java.sql.Date(p.getDob().getTime()));
+            st.setString(5, p.getPhone());
+            st.setString(6, p.getEmail());
+            st.setString(7, p.getAddress());
 
-    }catch(Exception e){}
-}
+            st.executeUpdate();
+
+        } catch (Exception e) {
+        }
+    }
 //Update
-public void update(Patient p){
 
-    String sql=
-    "UPDATE Patient "
-    + "SET FullName=?,Gender=?,DOB=?,Phone=?,Address=? "
-    + "WHERE PatientID=?";
+    public void update(Patient p) {
 
-    try{
+        String sql
+                = "UPDATE Patient\n"
+                + "SET AccountID=?,\n"
+                + "    FullName=?,\n"
+                + "    Gender=?,\n"
+                + "    DOB=?,\n"
+                + "    Phone=?,\n"
+                + "    Email=?,\n"
+                + "    Address=?\n"
+                + "WHERE PatientID=?";
 
-        PreparedStatement st=
-        connection.prepareStatement(sql);
+        try {
 
-        st.setString(1,p.getFullName());
-        st.setString(2,p.getGender());
-        st.setDate(3, (Date) p.getDob());
-        st.setString(4,p.getPhone());
-        st.setString(5,p.getAddress());
+            PreparedStatement st
+                    = connection.prepareStatement(sql);
 
-        st.setInt(6,p.getPatientID());
+            st.setInt(1, p.getAccountID());
+            st.setString(2, p.getFullName());
+            st.setString(3, p.getGender());
+            st.setDate(4, new java.sql.Date(p.getDob().getTime()));
+            st.setString(5, p.getPhone());
+            st.setString(6, p.getEmail());
+            st.setString(7, p.getAddress());
+            st.setInt(8, p.getPatientID());
+            st.executeUpdate();
 
-        st.executeUpdate();
-
-    }catch(Exception e){}
-}
+        } catch (Exception e) {
+        }
+    }
 //Delete
-public void delete(int id){
 
-    String sql=
-    "DELETE FROM Patient WHERE PatientID=?";
+    public void delete(int id) {
 
-    try{
+        String sql
+                = "DELETE FROM Patient WHERE PatientID=?";
 
-        PreparedStatement st=
-        connection.prepareStatement(sql);
+        try {
 
-        st.setInt(1,id);
+            PreparedStatement st
+                    = connection.prepareStatement(sql);
 
-        st.executeUpdate();
+            st.setInt(1, id);
 
-    }catch(Exception e){}
-}
+            st.executeUpdate();
+
+        } catch (Exception e) {
+        }
+    }
 
 //Phân trang
+    public List<Patient> paging(int index) {
 
-public List<Patient> paging(int index) {
+        List<Patient> list = new ArrayList<>();
 
-    List<Patient> list = new ArrayList<>();
+        String sql = "SELECT * FROM Patient "
+                + "ORDER BY PatientID "
+                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
-    String sql = "SELECT * FROM Patient "
-            + "ORDER BY PatientID "
-            + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        try {
+            PreparedStatement st = connection.prepareStatement(sql);
 
-    try {
-        PreparedStatement st = connection.prepareStatement(sql);
+            st.setInt(1, (index - 1) * 5);
+            st.setInt(2, 5);
 
-        st.setInt(1, (index - 1) * 5);
-        st.setInt(2, 5);
+            ResultSet rs = st.executeQuery();
 
-        ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                Patient p = new Patient(
+                        rs.getInt("PatientID"),
+                        rs.getInt("AccountID"),
+                        rs.getString("FullName"),
+                        rs.getString("Gender"),
+                        rs.getDate("DOB"),
+                        rs.getString("Phone"),
+                        rs.getString("Email"),
+                        rs.getString("Address")
+                );
 
-        while (rs.next()) {
-            Patient p = new Patient(
-                    rs.getInt("PatientID"),
-                    rs.getString("FullName"),
-                    rs.getString("Gender"),
-                    rs.getDate("DOB"),
-                    rs.getString("Phone"),
-                    rs.getString("Address")
-            );
+                list.add(p);
+            }
 
-            list.add(p);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
+        return list;
     }
-
-    return list;
-}
 
 //SEARCH PATIENT 
-public List<Patient> search(String keyword) {
+    public List<Patient> search(String keyword) {
 
-    List<Patient> list = new ArrayList<>();
+        List<Patient> list = new ArrayList<>();
 
-    String sql =
-        "SELECT * FROM Patient "
-      + "WHERE FullName LIKE ? "
-      + "OR CAST(PatientID AS VARCHAR) LIKE ? ";
+        String sql
+                = "SELECT * FROM Patient "
+                + "WHERE FullName LIKE ? "
+                + "OR CAST(PatientID AS VARCHAR) LIKE ? ";
 
-    try {
+        try {
 
-        PreparedStatement st = connection.prepareStatement(sql);
+            PreparedStatement st = connection.prepareStatement(sql);
 
-        st.setString(1, "%" + keyword + "%");
-        st.setString(2, "%" + keyword + "%");
+            st.setString(1, "%" + keyword + "%");
+            st.setString(2, "%" + keyword + "%");
 
-        ResultSet rs = st.executeQuery();
+            ResultSet rs = st.executeQuery();
 
-        while (rs.next()) {
+            while (rs.next()) {
 
-            list.add(new Patient(
-                    rs.getInt("PatientID"),
-                    rs.getString("FullName"),
-                    rs.getString("Gender"),
-                    rs.getDate("DOB"),
-                    rs.getString("Phone"),
-                    rs.getString("Address")
-            ));
+                list.add(new Patient(
+                        rs.getInt("PatientID"),
+                        rs.getInt("AccountID"),
+                        rs.getString("FullName"),
+                        rs.getString("Gender"),
+                        rs.getDate("DOB"),
+                        rs.getString("Phone"),
+                        rs.getString("Email"),
+                        rs.getString("Address")));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
+        return list;
     }
-
-    return list;
-}
-
 
 //ĐẾM SỐ BÊNH NHÂN(ĐỂ BIẾT CÓ BAO NHIÊU TRANG)
-public int getTotal() {
+    public int getTotal() {
 
-    String sql = "SELECT COUNT(*) FROM Patient";
+        String sql = "SELECT COUNT(*) FROM Patient";
 
-    try {
+        try {
 
-        PreparedStatement st = connection.prepareStatement(sql);
+            PreparedStatement st = connection.prepareStatement(sql);
 
-        ResultSet rs = st.executeQuery();
+            ResultSet rs = st.executeQuery();
 
-        if (rs.next()) {
-            return rs.getInt(1);
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
+        return 0;
     }
-
-    return 0;
-}
-
 
 }

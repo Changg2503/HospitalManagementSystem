@@ -17,6 +17,7 @@ import utils.DBContext;
  * @author Nguyen Trang
  */
 public class MedicalRecordDAO extends DBContext {
+
     //-------------------------lấy tất cả danh sách -------------------------
     public List<MedicalRecord> getAll() {
         List<MedicalRecord> list = new ArrayList<>();
@@ -43,7 +44,7 @@ public class MedicalRecordDAO extends DBContext {
 
         return list;
     }
-    
+
     //------------------------- search theo id-------------------------
     public MedicalRecord getByID(int id) {
         String sql
@@ -71,7 +72,7 @@ public class MedicalRecordDAO extends DBContext {
 
         return null;
     }
-    
+
     // -------------------------thêm-------------------------
     public void insert(MedicalRecord m) {
         String sql = """
@@ -94,7 +95,7 @@ public class MedicalRecordDAO extends DBContext {
             e.printStackTrace();
         }
     }
-    
+
     //-------------------------cập nhật-------------------------
     public void update(MedicalRecord m) {
         String sql = """
@@ -171,7 +172,63 @@ public class MedicalRecordDAO extends DBContext {
 
         return list;
     }
-/*
+
+    public int getTotal() {
+        String sql = "SELECT COUNT(*) FROM MedicalRecord";
+
+        try {
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    public List<MedicalRecord> paging(int page) {
+
+        List<MedicalRecord> list = new ArrayList<>();
+
+        String sql = """
+                 SELECT *
+                 FROM MedicalRecord
+                 ORDER BY RecordID
+                 OFFSET ? ROWS
+                 FETCH NEXT 5 ROWS ONLY
+                 """;
+
+        try {
+
+            PreparedStatement ps = connection.prepareStatement(sql);
+
+            ps.setInt(1, (page - 1) * 5);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(new MedicalRecord(
+                        rs.getInt("RecordID"),
+                        rs.getInt("PatientID"),
+                        rs.getInt("DoctorID"),
+                        rs.getString("Diagnosis"),
+                        rs.getString("Treatment"),
+                        rs.getTimestamp("CreatedDate")
+                ));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+    /*
     //-------------------------lấy danh sách bệnh nhân-------------------------
     public List<Patient> getAllPatient() {
         List<Patient> list = new ArrayList<>();
@@ -229,5 +286,5 @@ public class MedicalRecordDAO extends DBContext {
 
         return list;
     }
-*/
+     */
 }

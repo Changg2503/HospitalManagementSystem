@@ -63,6 +63,9 @@ public class AppointmentServlet extends HttpServlet {
 
         //================ LIST + PAGINATION =================
         if (action == null) {
+            action = "list";
+        }
+        if ("list".equals(action)) {
 
             int index = 1;
 
@@ -89,15 +92,28 @@ public class AppointmentServlet extends HttpServlet {
             request.setAttribute("endPage", endPage);
 
             request.getRequestDispatcher(
-                    "appointment-list.jsp")
+                    "jsp/appointment/list.jsp")
                     .forward(request, response);
         } //================ OPEN CREATE FORM =================
-        else if ("create".equals(action)) {
+        else if ("add".equals(action)) {
 
             request.getRequestDispatcher(
-                    "appointment-form.jsp")
+                    "jsp/appointment/form.jsp").forward(request, response);
+
+        } else if ("edit".equals(action)) {
+
+            int id = Integer.parseInt(
+                    request.getParameter("id"));
+
+            Appointment a = dao.getAppointmentById(id);
+
+            response.sendRedirect("appointment?action=list");
+                    
+
+            request.getRequestDispatcher(
+                    "jsp/appointment/form.jsp")
                     .forward(request, response);
-        } //================ CANCEL APPOINTMENT =================
+        }//================ CANCEL APPOINTMENT =================
         else if ("cancel".equals(action)) {
 
             int id
@@ -133,10 +149,10 @@ public class AppointmentServlet extends HttpServlet {
             throws ServletException, IOException {
 
         AppointmentDAO dao = new AppointmentDAO();
-        int patientID= Integer.parseInt( request.getParameter("patientID"));
+        int patientID = Integer.parseInt(request.getParameter("patientID"));
 
         int doctorID = Integer.parseInt(
-                        request.getParameter("doctorID"));
+                request.getParameter("doctorID"));
 
         String appointmentDate = request.getParameter("appointmentDate");
 

@@ -109,6 +109,7 @@ public class AuthorizationFilter implements Filter {
         // Các trang không cần login
         // ==========================
         if (url.contains("login")
+                || url.contains("register")
                 || url.contains("css")
                 || url.contains("js")
                 || url.contains("images")) {
@@ -190,12 +191,12 @@ public class AuthorizationFilter implements Filter {
                 request,
                 response);
 
-}
+    }
 
-/**
- * Return the filter configuration object for this filter.
- */
-public FilterConfig getFilterConfig() {
+    /**
+     * Return the filter configuration object for this filter.
+     */
+    public FilterConfig getFilterConfig() {
         return (this.filterConfig);
     }
 
@@ -230,7 +231,7 @@ public FilterConfig getFilterConfig() {
      * Return a String representation of this object.
      */
     @Override
-public String toString() {
+    public String toString() {
         if (filterConfig == null) {
             return ("AuthorizationFilter()");
         }
