@@ -5,6 +5,11 @@
 
 package controller;
 
+import dao.AppointmentDAO;
+import dao.DoctorDAO;
+import dao.MedicalRecordDAO;
+import dao.PatientDAO;
+import dao.ReportDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -53,7 +58,22 @@ public class DashboardServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-         request.getRequestDispatcher("jsp/admin/dashboard.jsp").forward(request, response);
+
+        PatientDAO patientDao = new PatientDAO();
+        DoctorDAO doctorDao = new DoctorDAO();
+        AppointmentDAO appointmentDao = new AppointmentDAO();
+        MedicalRecordDAO recordDao = new MedicalRecordDAO();
+        ReportDAO reportDao = new ReportDAO();
+
+        request.setAttribute("totalPatient", patientDao.getTotal());
+        request.setAttribute("totalDoctor", doctorDao.getTotal());
+        request.setAttribute("totalAppointment", appointmentDao.getTotalAppointment());
+        request.setAttribute("totalRecord", recordDao.getTotal());
+
+        request.setAttribute("recentAppointments", appointmentDao.getRecentAppointments());
+        request.setAttribute("STATUS_REPORT", reportDao.appointmentByStatus());
+
+        request.getRequestDispatcher("jsp/admin/dashboard.jsp").forward(request, response);
     } 
 
     /** 

@@ -29,6 +29,10 @@
             <form action="department"
                   method="post">
 
+                <input type="hidden"
+                       name="action"
+                       value="${d==null?'insert':'update'}">
+
                 <c:if test="${d != null}">
                     <input type="hidden"
                            name="id"

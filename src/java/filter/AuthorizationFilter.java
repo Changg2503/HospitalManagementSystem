@@ -183,6 +183,55 @@ public class AuthorizationFilter implements Filter {
                     + "/login");
             return;
         }
+         // ==========================
+        // APPOINTMENT
+        // - Ai đã login cũng được xem/đặt lịch (list, add)
+        // - Chỉ Doctor + Admin được duyệt/hoàn tất/hủy lịch
+        //   (cancel, complete, edit)
+        // ==========================
+        if (url.contains("/appointment")) {
+
+            String action = req.getParameter("action");
+
+            boolean isManageAction = action != null
+                    && (action.equals("cancel")
+                    || action.equals("complete")
+                    || action.equals("edit"));
+
+            if (isManageAction
+                    && !role.equals("Doctor")
+                    && !role.equals("Admin")) {
+
+                res.sendRedirect(
+                        req.getContextPath()
+                        + "/appointment");
+                return;
+            }
+        }
+
+        // ==========================
+        // MEDICAL RECORD
+        // - Patient chỉ được xem (list / view / xem chi tiết)
+        // - Chỉ Doctor + Admin được ghi/sửa/xóa hồ sơ bệnh án
+        // ==========================
+        if (url.contains("/medicalRecord")) {
+
+            String action = req.getParameter("action");
+
+            boolean isReadOnlyAction = action == null
+                    || action.equals("list")
+                    || action.equals("view");
+
+            if (!isReadOnlyAction
+                    && !role.equals("Doctor")
+                    && !role.equals("Admin")) {
+
+                res.sendRedirect(
+                        req.getContextPath()
+                        + "/medicalRecord");
+                return;
+            }
+        }
 
         // ==========================
         // Nếu qua được tất cả kiểm tra

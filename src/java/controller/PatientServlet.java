@@ -183,18 +183,25 @@ public class PatientServlet extends HttpServlet {
 
                 try {
 
+                    String accIdParam = request.getParameter("accountID");
+                    int accountID = (accIdParam == null || accIdParam.isEmpty())
+                            ? 0 : Integer.parseInt(accIdParam);
+
                     String fullName = request.getParameter("fullName");
                     String gender = request.getParameter("gender");
                     Date dob = Date.valueOf(request.getParameter("dob"));
                     String phone = request.getParameter("phone");
+                    String email = request.getParameter("email");
                     String address = request.getParameter("address");
 
                     Patient p = new Patient();
 
+                    p.setAccountID(accountID);
                     p.setFullName(fullName);
                     p.setGender(gender);
                     p.setDob(dob);
                     p.setPhone(phone);
+                    p.setEmail(email);
                     p.setAddress(address);
 
                     dao.insert(p);
@@ -214,19 +221,26 @@ public class PatientServlet extends HttpServlet {
 
                     int id = Integer.parseInt(request.getParameter("patientID"));
 
+                    String accIdParam = request.getParameter("accountID");
+                    int accountID = (accIdParam == null || accIdParam.isEmpty())
+                            ? 0 : Integer.parseInt(accIdParam);
+
                     String fullName = request.getParameter("fullName");
                     String gender = request.getParameter("gender");
                     Date dob = Date.valueOf(request.getParameter("dob"));
                     String phone = request.getParameter("phone");
+                    String email = request.getParameter("email");
                     String address = request.getParameter("address");
 
                     Patient p = new Patient();
 
                     p.setPatientID(id);
+                    p.setAccountID(accountID);
                     p.setFullName(fullName);
                     p.setGender(gender);
                     p.setDob(dob);
                     p.setPhone(phone);
+                    p.setEmail(email);
                     p.setAddress(address);
 
                     dao.update(p);

@@ -44,6 +44,13 @@
                 Search
             </button>
 
+            <c:if test="${not empty keyword}">
+                <a href="department?action=list"
+                   class="btn btn-secondary">
+                    Clear
+                </a>
+            </c:if>
+
         </div>
 
     </form>

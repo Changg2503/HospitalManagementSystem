@@ -43,7 +43,7 @@ public class DoctorDAO extends DBContext{
             ));
         }
 
-    }catch(Exception e){}
+    }catch(Exception e){ e.printStackTrace();}
 
     return list;
 }
@@ -103,7 +103,7 @@ public class DoctorDAO extends DBContext{
 
         st.executeUpdate();
 
-    }catch(Exception e){}
+    }catch(Exception e){ e.printStackTrace();}
 }
     
     
@@ -131,7 +131,7 @@ public class DoctorDAO extends DBContext{
 
         st.executeUpdate();
 
-    }catch(Exception e){}
+    }catch(Exception e){ e.printStackTrace();}
 }
    
     
@@ -152,7 +152,7 @@ public class DoctorDAO extends DBContext{
 
         st.executeUpdate();
 
-    }catch(Exception e){}
+    }catch(Exception e){ e.printStackTrace();}
 }
     
     //Phân trang 

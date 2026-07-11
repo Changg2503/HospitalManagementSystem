@@ -2,89 +2,167 @@
     Document   : dashboard
     Created on : Jun 29, 2026, 3:57:26 PM
     Author     : Nguyen Trang
-
-
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>JSP Page</title>
-    </head>
-    <body>
-        <h1>Hospital Management System</h1>
-
-        <h3>
-            Welcome:
-            ${sessionScope.ACCOUNT.username}
-        </h3>
-
-        <h3>
-            Role:
-            ${sessionScope.ACCOUNT.role}
-        </h3>
-
-        <a href="logout">
-            Logout
-        </a>
-    </body>
-</html>
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@taglib prefix="c"
+          uri="http://java.sun.com/jsp/jstl/core"%>
 
 <jsp:include page="../common/header.jsp"/>
 <jsp:include page="../common/sidebar.jsp"/>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+
 <div class="content">
 
-    <h2>Dashboard</h2>
+    <h2 class="mb-1">Dashboard</h2>
+    <p class="text-muted mb-4">
+        Welcome back, <strong>${sessionScope.ACCOUNT.username}</strong>
+        (${sessionScope.ACCOUNT.role})
+    </p>
 
-    <div class="row mt-4">
+    <div class="row">
 
-        <div class="col-md-3">
+        <div class="col-md-3 mb-3">
+            <a href="patient?action=list" class="text-decoration-none">
+                <div class="card-box">
+                    <h5 class="text-muted">
+                        <i class="fa fa-user"></i>
+                        Total Patients
+                    </h5>
+                    <h2>${totalPatient}</h2>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <a href="doctor?action=list" class="text-decoration-none">
+                <div class="card-box">
+                    <h5 class="text-muted">
+                        <i class="fa fa-user-doctor"></i>
+                        Total Doctors
+                    </h5>
+                    <h2>${totalDoctor}</h2>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <a href="appointment?action=list" class="text-decoration-none">
+                <div class="card-box">
+                    <h5 class="text-muted">
+                        <i class="fa fa-calendar-check"></i>
+                        Total Appointments
+                    </h5>
+                    <h2>${totalAppointment}</h2>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <a href="medicalRecord?action=list" class="text-decoration-none">
+                <div class="card-box">
+                    <h5 class="text-muted">
+                        <i class="fa fa-file-medical"></i>
+                        Total Medical Records
+                    </h5>
+                    <h2>${totalRecord}</h2>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
+    <div class="row mt-2">
+
+        <!-- Recent appointments -->
+        <div class="col-md-7 mb-4">
 
             <div class="card-box">
 
-                <h5>Total Patient</h5>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">
+                        <i class="fa fa-clock-rotate-left"></i>
+                        Recent Appointments
+                    </h5>
+                    <a href="appointment?action=list" class="btn btn-sm btn-outline-primary">
+                        View all
+                    </a>
+                </div>
 
-                <h2>${totalPatient}</h2>
+                <table class="table table-sm table-striped mb-0">
+
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Patient ID</th>
+                            <th>Doctor ID</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <c:forEach items="${recentAppointments}" var="a">
+                            <tr>
+                                <td>${a.appointmentID}</td>
+                                <td>${a.patientID}</td>
+                                <td>${a.doctorID}</td>
+                                <td>${a.appointmentDate}</td>
+                                <td>
+                                    <span class="badge
+                                        ${a.status=='Completed' ? 'bg-success' :
+                                          a.status=='Cancelled' ? 'bg-danger' :
+                                          a.status=='Confirmed' ? 'bg-primary' : 'bg-warning'}">
+                                        ${a.status}
+                                    </span>
+                                </td>
+                            </tr>
+                        </c:forEach>
+
+                        <c:if test="${empty recentAppointments}">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">
+                                    No appointments yet.
+                                </td>
+                            </tr>
+                        </c:if>
+
+                    </tbody>
+
+                </table>
 
             </div>
 
         </div>
 
-        <div class="col-md-3">
+        <!-- Mini status chart -->
+        <div class="col-md-5 mb-4">
 
             <div class="card-box">
 
-                <h5>Total Doctor</h5>
+                <h5 class="mb-3">
+                    <i class="fa fa-chart-pie"></i>
+                    Appointment Status Overview
+                </h5>
 
-                <h2>${totalDoctor}</h2>
+                <c:if test="${empty STATUS_REPORT}">
+                    <p class="text-muted text-center">No data.</p>
+                </c:if>
 
-            </div>
+                <c:if test="${not empty STATUS_REPORT}">
+                    <div style="position:relative;height:220px;">
+                        <canvas id="dashboardStatusChart"></canvas>
+                    </div>
+                </c:if>
 
-        </div>
-
-        <div class="col-md-3">
-
-            <div class="card-box">
-
-                <h5>Total Appointment</h5>
-
-                <h2>${totalAppointment}</h2>
-
-            </div>
-
-        </div>
-
-        <div class="col-md-3">
-
-            <div class="card-box">
-
-                <h5>Total Record</h5>
-
-                <h2>${totalRecord}</h2>
+                <div class="d-grid mt-3">
+                    <a href="report" class="btn btn-outline-secondary btn-sm">
+                        <i class="fa fa-chart-column"></i>
+                        View full reports
+                    </a>
+                </div>
 
             </div>
 
@@ -95,3 +173,25 @@
 </div>
 
 <jsp:include page="../common/footer.jsp"/>
+
+<script>
+    const dashStatusLabels = [<c:forEach items="${STATUS_REPORT}" var="row" varStatus="st">'${row[0]}'<c:if test="${!st.last}">,</c:if></c:forEach>];
+    const dashStatusData = [<c:forEach items="${STATUS_REPORT}" var="row" varStatus="st">${row[1]}<c:if test="${!st.last}">,</c:if></c:forEach>];
+
+    if (dashStatusLabels.length > 0) {
+        new Chart(document.getElementById('dashboardStatusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: dashStatusLabels,
+                datasets: [{
+                    data: dashStatusData,
+                    backgroundColor: ['#0d6efd', '#20c997', '#ffc107', '#dc3545', '#6f42c1']
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+</script>

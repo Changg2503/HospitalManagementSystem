@@ -124,6 +124,38 @@ public class DepartmentDAO extends DBContext {
         }
     }
 
+    // Search department by name
+    public List<Department> search(String keyword) {
+
+        List<Department> list = new ArrayList<>();
+
+        String sql = "SELECT * FROM Department WHERE DepartmentName LIKE ?";
+
+        try {
+
+            PreparedStatement ps = connection.prepareStatement(sql);
+
+            ps.setString(1, "%" + keyword + "%");
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                Department d = new Department(
+                        rs.getInt("DepartmentID"),
+                        rs.getString("DepartmentName")
+                );
+
+                list.add(d);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
     // COUNT TOTAL DEPARTMENTS 
     public int getTotalDepartment() {
 

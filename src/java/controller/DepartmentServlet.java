@@ -19,7 +19,6 @@ import model.Department;
  *
  * @author admin
  */
-@WebServlet(name = "DepartmentServlet", urlPatterns = {"/department"})
 public class DepartmentServlet extends HttpServlet {
 
     /**
@@ -91,11 +90,30 @@ public class DepartmentServlet extends HttpServlet {
             }
 
             request.setAttribute("list", list);
+            request.setAttribute("currentPage", index);
             request.setAttribute("endPage", endPage);
 
             request.getRequestDispatcher(
                     "jsp/department/list.jsp")
                     .forward(request, response);
+        } //================ SEARCH =================
+        else if ("search".equals(action)) {
+
+            String keyword = request.getParameter("keyword");
+
+            if (keyword == null) {
+                keyword = "";
+            }
+
+            List<Department> result = dao.search(keyword);
+
+            request.setAttribute("list", result);
+            request.setAttribute("keyword", keyword);
+
+            request.getRequestDispatcher(
+                    "jsp/department/list.jsp")
+                    .forward(request, response);
+
         } //================ OPEN CREATE FORM =================
         else if ("add".equals(action)) {
 
@@ -141,34 +159,72 @@ public class DepartmentServlet extends HttpServlet {
             throws ServletException, IOException {
         DepartmentDAO dao = new DepartmentDAO();
 
-        String id = request.getParameter("id");
+        String action = request.getParameter("action");
 
-        String name = request.getParameter("name");
-
-        //================ CREATE DEPARTMENT =================
-        if (id == null || id.isEmpty()) {
-
-            Department d
-                    = new Department();
-
-            d.setDepartmentName(name);
-
-            dao.addDepartment(d);
-        } //================ UPDATE DEPARTMENT =================
-        else {
-
-            Department d
-                    = new Department();
-
-            d.setDepartmentID(
-                    Integer.parseInt(id));
-
-            d.setDepartmentName(name);
-
-            dao.updateDepartment(d);
+        if (action == null) {
+            action = "";
         }
 
-        response.sendRedirect("department");
+        switch (action) {
+
+            //================ DELETE =================
+            case "delete": {
+
+                try {
+                    int id = Integer.parseInt(request.getParameter("id"));
+
+                    dao.deleteDepartment(id);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                response.sendRedirect("department");
+                break;
+            }
+
+            //================ UPDATE =================
+            case "update": {
+
+                try {
+                    int id = Integer.parseInt(request.getParameter("id"));
+                    String name = request.getParameter("name");
+
+                    Department d = new Department();
+
+                    d.setDepartmentID(id);
+                    d.setDepartmentName(name);
+
+                    dao.updateDepartment(d);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                response.sendRedirect("department");
+                break;
+            }
+
+            //================ INSERT (default) =================
+            default: {
+
+                try {
+                    String name = request.getParameter("name");
+
+                    Department d = new Department();
+
+                    d.setDepartmentName(name);
+
+                    dao.addDepartment(d);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                response.sendRedirect("department");
+                break;
+            }
+        }
     }
 
     /**

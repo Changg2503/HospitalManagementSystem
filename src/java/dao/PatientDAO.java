@@ -46,6 +46,7 @@ public class PatientDAO extends DBContext {
             }
 
         } catch (Exception e) {
+             e.printStackTrace();
         }
 
         return list;
@@ -80,6 +81,7 @@ public class PatientDAO extends DBContext {
             }
 
         } catch (Exception e) {
+             e.printStackTrace();
         }
 
         return null;
@@ -98,7 +100,11 @@ public class PatientDAO extends DBContext {
             PreparedStatement st
                     = connection.prepareStatement(sql);
 
-            st.setInt(1, p.getAccountID());
+            if (p.getAccountID() <= 0) {
+                st.setNull(1, java.sql.Types.INTEGER);
+            } else {
+                st.setInt(1, p.getAccountID());
+            }
             st.setString(2, p.getFullName());
             st.setString(3, p.getGender());
             st.setDate(4, new java.sql.Date(p.getDob().getTime()));
@@ -109,6 +115,7 @@ public class PatientDAO extends DBContext {
             st.executeUpdate();
 
         } catch (Exception e) {
+             e.printStackTrace();
         }
     }
 //Update
@@ -131,7 +138,11 @@ public class PatientDAO extends DBContext {
             PreparedStatement st
                     = connection.prepareStatement(sql);
 
-            st.setInt(1, p.getAccountID());
+            if (p.getAccountID() <= 0) {
+                st.setNull(1, java.sql.Types.INTEGER);
+            } else {
+                st.setInt(1, p.getAccountID());
+            }
             st.setString(2, p.getFullName());
             st.setString(3, p.getGender());
             st.setDate(4, new java.sql.Date(p.getDob().getTime()));
@@ -142,6 +153,7 @@ public class PatientDAO extends DBContext {
             st.executeUpdate();
 
         } catch (Exception e) {
+             e.printStackTrace();
         }
     }
 //Delete
@@ -161,6 +173,7 @@ public class PatientDAO extends DBContext {
             st.executeUpdate();
 
         } catch (Exception e) {
+             e.printStackTrace();
         }
     }
 

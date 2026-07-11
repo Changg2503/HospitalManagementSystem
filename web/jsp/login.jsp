@@ -60,7 +60,7 @@
             <div class="text-center mb-4">
 
                 <i class="fa-solid fa-hospital hospital-icon"></i>
-                <img src="images/hospital.png">
+                <!--<img src="images/hospital.png">-->
 
                 <h2 class="title mt-3">
                     Hospital Management

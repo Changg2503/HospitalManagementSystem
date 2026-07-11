@@ -15,7 +15,6 @@ import model.Appointment;
  *
  * @author admin
  */
-@WebServlet(name = "AppointmentServlet", urlPatterns = {"/appointment"})
 public class AppointmentServlet extends HttpServlet {
 
     /**
@@ -89,11 +88,12 @@ public class AppointmentServlet extends HttpServlet {
             }
 
             request.setAttribute("list", list);
+            request.setAttribute("currentPage", index);
             request.setAttribute("endPage", endPage);
 
-            request.getRequestDispatcher(
-                    "jsp/appointment/list.jsp")
-                    .forward(request, response);
+            request.getRequestDispatcher("jsp/appointment/list.jsp").forward(request, response);
+                    
+                    
         } //================ OPEN CREATE FORM =================
         else if ("add".equals(action)) {
 
@@ -107,8 +107,7 @@ public class AppointmentServlet extends HttpServlet {
 
             Appointment a = dao.getAppointmentById(id);
 
-            response.sendRedirect("appointment?action=list");
-                    
+            request.setAttribute("appointment", a);
 
             request.getRequestDispatcher(
                     "jsp/appointment/form.jsp")
@@ -149,25 +148,95 @@ public class AppointmentServlet extends HttpServlet {
             throws ServletException, IOException {
 
         AppointmentDAO dao = new AppointmentDAO();
-        int patientID = Integer.parseInt(request.getParameter("patientID"));
 
-        int doctorID = Integer.parseInt(
-                request.getParameter("doctorID"));
+        String action = request.getParameter("action");
 
-        String appointmentDate = request.getParameter("appointmentDate");
+        if (action == null) {
+            action = "insert";
+        }
 
-        //================ CREATE APPOINTMENT OBJECT =================
-        Appointment a = new Appointment();
+        switch (action) {
 
-        a.setPatientID(patientID);
-        a.setDoctorID(doctorID);
-        a.setAppointmentDate(appointmentDate);
+            //================ DELETE =================
+            case "delete": {
 
-        a.setStatus("Pending");
+                try {
+                    int id = Integer.parseInt(
+                            request.getParameter("id"));
 
-        dao.addAppointment(a);
+                    dao.deleteAppointment(id);
 
-        response.sendRedirect("appointment");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                response.sendRedirect("appointment");
+                break;
+            }
+
+            //================ UPDATE =================
+            case "update": {
+
+                try {
+                    int appointmentID = Integer.parseInt(
+                            request.getParameter("appointmentID"));
+
+                    int patientID = Integer.parseInt(
+                            request.getParameter("patientID"));
+
+                    int doctorID = Integer.parseInt(
+                            request.getParameter("doctorID"));
+
+                    String appointmentDate = request.getParameter("appointmentDate");
+                    String status = request.getParameter("status");
+
+                    Appointment a = new Appointment();
+
+                    a.setAppointmentID(appointmentID);
+                    a.setPatientID(patientID);
+                    a.setDoctorID(doctorID);
+                    a.setAppointmentDate(appointmentDate);
+                    a.setStatus(status);
+
+                    dao.updateAppointment(a);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                response.sendRedirect("appointment");
+                break;
+            }
+
+            //================ INSERT (default) =================
+            default: {
+
+                try {
+                    int patientID = Integer.parseInt(
+                            request.getParameter("patientID"));
+
+                    int doctorID = Integer.parseInt(
+                            request.getParameter("doctorID"));
+
+                    String appointmentDate = request.getParameter("appointmentDate");
+
+                    Appointment a = new Appointment();
+
+                    a.setPatientID(patientID);
+                    a.setDoctorID(doctorID);
+                    a.setAppointmentDate(appointmentDate);
+                    a.setStatus("Pending");
+
+                    dao.addAppointment(a);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                response.sendRedirect("appointment");
+                break;
+            }
+        }
     }
 
     /**

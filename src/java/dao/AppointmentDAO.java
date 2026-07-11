@@ -9,6 +9,40 @@ import utils.DBContext;
 
 public class AppointmentDAO extends DBContext {
 
+    // Get 5 most recent appointments (for dashboard widget)
+    public List<Appointment> getRecentAppointments() {
+
+        List<Appointment> list = new ArrayList<>();
+
+        String sql = "SELECT TOP 5 * FROM Appointment "
+                + "ORDER BY AppointmentID DESC";
+
+        try {
+
+            PreparedStatement ps = connection.prepareStatement(sql);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                Appointment a = new Appointment();
+
+                a.setAppointmentID(rs.getInt("AppointmentID"));
+                a.setPatientID(rs.getInt("PatientID"));
+                a.setDoctorID(rs.getInt("DoctorID"));
+                a.setAppointmentDate(rs.getString("AppointmentDate"));
+                a.setStatus(rs.getString("Status"));
+
+                list.add(a);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
     // Get all appointments
     public ArrayList<Appointment> getAllAppointment() {
 
@@ -108,6 +142,51 @@ public class AppointmentDAO extends DBContext {
         }
 
         return null;
+    }
+
+    // Update full appointment (used by edit form)
+    public void updateAppointment(Appointment a) {
+
+        String sql
+                = "UPDATE Appointment "
+                + "SET PatientID=?, DoctorID=?, AppointmentDate=?, Status=? "
+                + "WHERE AppointmentID=?";
+
+        try {
+
+            PreparedStatement ps
+                    = connection.prepareStatement(sql);
+
+            ps.setInt(1, a.getPatientID());
+            ps.setInt(2, a.getDoctorID());
+            ps.setString(3, a.getAppointmentDate());
+            ps.setString(4, a.getStatus());
+            ps.setInt(5, a.getAppointmentID());
+
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Delete appointment
+    public void deleteAppointment(int id) {
+
+        String sql = "DELETE FROM Appointment WHERE AppointmentID=?";
+
+        try {
+
+            PreparedStatement ps
+                    = connection.prepareStatement(sql);
+
+            ps.setInt(1, id);
+
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     // Update status

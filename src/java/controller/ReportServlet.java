@@ -65,6 +65,8 @@ public class ReportServlet extends HttpServlet {
         request.setAttribute( "DEPARTMENT_REPORT",dao.appointmentByDepartment());
 
         request.setAttribute("REVENUE_REPORT",dao.revenueByMonth());
+        
+        request.setAttribute("RECORD_REPORT",dao.medicalRecordByMonth());
 
         request.getRequestDispatcher("jsp/admin/report.jsp").forward(request, response);
     }
