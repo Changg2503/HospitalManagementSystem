@@ -4,15 +4,19 @@
  */
 package controller;
 
+import dao.DoctorDAO;
 import dao.MedicalRecordDAO;
+import dao.PatientDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.List;
 import model.MedicalRecord;
+import utils.Validator;
 
 /**
  *
@@ -66,6 +70,17 @@ public class MedicalRecordServlet extends HttpServlet {
             action = "list";
         }
 
+        // Xác định Patient hiện tại (nếu role = Patient) để giới hạn dữ liệu
+        model.Account account = (model.Account) request.getSession().getAttribute("ACCOUNT");
+        Integer myPatientID = null;
+
+        if (account != null && "Patient".equals(account.getRole())) {
+            model.Patient myPatient = new PatientDAO().getByAccountID(account.getAccountID());
+            if (myPatient != null) {
+                myPatientID = myPatient.getPatientID();
+            }
+        }
+
         switch (action) {
 
             //================ LIST + PAGINATION =================
@@ -82,9 +97,18 @@ public class MedicalRecordServlet extends HttpServlet {
                     page = 1;
                 }
 
-                List<MedicalRecord> list = dao.paging(page);
+                List<MedicalRecord> list;
+                int total;
 
-                int total = dao.getTotal();
+                if (myPatientID != null) {
+                    // Role Patient: chỉ xem hồ sơ bệnh án của chính mình
+                    list = dao.pagingByPatient(myPatientID, page);
+                    total = dao.getTotalByPatient(myPatientID);
+                } else {
+                    // Admin / Doctor: xem tất cả
+                    list = dao.paging(page);
+                    total = dao.getTotal();
+                }
 
                 int endPage = total / 5;
 
@@ -112,6 +136,12 @@ public class MedicalRecordServlet extends HttpServlet {
 
                 List<MedicalRecord> result = dao.search(keyword);
 
+                // Role Patient: chỉ được thấy record của chính mình trong kết quả search
+                if (myPatientID != null) {
+                    final int pid = myPatientID;
+                    result.removeIf(r -> r.getPatientID() != pid);
+                }
+
                 request.setAttribute("listRecord", result);
                 request.setAttribute("keyword", keyword);
 
@@ -136,6 +166,13 @@ public class MedicalRecordServlet extends HttpServlet {
                 int id = Integer.parseInt(request.getParameter("id"));
 
                 MedicalRecord record = dao.getByID(id);
+
+                // Role Patient: chặn xem/sửa record không phải của mình
+                if (myPatientID != null
+                        && (record == null || record.getPatientID() != myPatientID)) {
+                    response.sendRedirect("medicalRecord?action=list");
+                    return;
+                }
 
                 request.setAttribute("record", record);
 
@@ -180,76 +217,121 @@ public class MedicalRecordServlet extends HttpServlet {
         switch (action) {
 
             //================ INSERT =================
-            case "insert":
+            case "insert": {
+
+                String patientIDStr = request.getParameter("patientID");
+                String doctorIDStr = request.getParameter("doctorID");
+                String diagnosis = request.getParameter("diagnosis");
+                String treatment = request.getParameter("treatment");
+
+                List<String> errors = validateRecord(
+                        patientIDStr, doctorIDStr, diagnosis);
+
+                if (!errors.isEmpty()) {
+
+                    MedicalRecord m = new MedicalRecord();
+                    m.setDiagnosis(diagnosis);
+                    m.setTreatment(treatment);
+                    try {
+                        m.setPatientID(Integer.parseInt(patientIDStr));
+                        m.setDoctorID(Integer.parseInt(doctorIDStr));
+                    } catch (Exception ignore) {
+                    }
+
+                    request.setAttribute("errors", errors);
+                    request.setAttribute("record", m);
+
+                    request.getRequestDispatcher("jsp/medicalRecord/form.jsp")
+                            .forward(request, response);
+                    return;
+                }
 
                 try {
 
-                int patientID = Integer.parseInt(
-                        request.getParameter("patientID"));
+                    int patientID = Integer.parseInt(patientIDStr);
+                    int doctorID = Integer.parseInt(doctorIDStr);
 
-                int doctorID = Integer.parseInt(
-                        request.getParameter("doctorID"));
+                    MedicalRecord m = new MedicalRecord();
 
-                String diagnosis
-                        = request.getParameter("diagnosis");
+                    m.setPatientID(patientID);
+                    m.setDoctorID(doctorID);
+                    m.setDiagnosis(diagnosis.trim());
+                    m.setTreatment(treatment);
 
-                String treatment
-                        = request.getParameter("treatment");
+                    dao.insert(m);
 
-                MedicalRecord m = new MedicalRecord();
+                    request.getSession().setAttribute("FLASH_SUCCESS", "Medical record added successfully.");
 
-                m.setPatientID(patientID);
-                m.setDoctorID(doctorID);
-                m.setDiagnosis(diagnosis);
-                m.setTreatment(treatment);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    request.getSession().setAttribute("FLASH_ERROR", "Failed to add medical record.");
+                }
 
-                dao.insert(m);
+                response.sendRedirect("medicalRecord?action=list");
 
-            } catch (Exception e) {
-                e.printStackTrace();
+                break;
             }
 
-            response.sendRedirect("medicalRecord?action=list");
-
-            break;
-
             //================ UPDATE =================
-            case "update":
-
-                try {
+            case "update": {
 
                 int recordID = Integer.parseInt(
                         request.getParameter("recordID"));
 
-                int patientID = Integer.parseInt(
-                        request.getParameter("patientID"));
+                String patientIDStr = request.getParameter("patientID");
+                String doctorIDStr = request.getParameter("doctorID");
+                String diagnosis = request.getParameter("diagnosis");
+                String treatment = request.getParameter("treatment");
 
-                int doctorID = Integer.parseInt(
-                        request.getParameter("doctorID"));
+                List<String> errors = validateRecord(
+                        patientIDStr, doctorIDStr, diagnosis);
 
-                String diagnosis
-                        = request.getParameter("diagnosis");
+                if (!errors.isEmpty()) {
 
-                String treatment
-                        = request.getParameter("treatment");
+                    MedicalRecord m = new MedicalRecord();
+                    m.setRecordID(recordID);
+                    m.setDiagnosis(diagnosis);
+                    m.setTreatment(treatment);
+                    try {
+                        m.setPatientID(Integer.parseInt(patientIDStr));
+                        m.setDoctorID(Integer.parseInt(doctorIDStr));
+                    } catch (Exception ignore) {
+                    }
 
-                MedicalRecord m = new MedicalRecord();
+                    request.setAttribute("errors", errors);
+                    request.setAttribute("record", m);
 
-                m.setRecordID(recordID);
-                m.setPatientID(patientID);
-                m.setDoctorID(doctorID);
-                m.setDiagnosis(diagnosis);
-                m.setTreatment(treatment);
+                    request.getRequestDispatcher("jsp/medicalRecord/form.jsp")
+                            .forward(request, response);
+                    return;
+                }
 
-                dao.update(m);
+                try {
 
-            } catch (Exception e) {
-                e.printStackTrace();
+                    int patientID = Integer.parseInt(patientIDStr);
+                    int doctorID = Integer.parseInt(doctorIDStr);
+
+                    MedicalRecord m = new MedicalRecord();
+
+                    m.setRecordID(recordID);
+                    m.setPatientID(patientID);
+                    m.setDoctorID(doctorID);
+                    m.setDiagnosis(diagnosis.trim());
+                    m.setTreatment(treatment);
+
+                    dao.update(m);
+
+                    request.getSession().setAttribute("FLASH_SUCCESS", "Medical record updated successfully.");
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    request.getSession().setAttribute("FLASH_ERROR", "Failed to update medical record.");
+                }
+
+                response.sendRedirect("medicalRecord?action=list");
+
+                break;
             }
-
-            response.sendRedirect("medicalRecord?action=list");
-
-            break;
 
             //================ DELETE =================
             case "delete":
@@ -261,8 +343,11 @@ public class MedicalRecordServlet extends HttpServlet {
 
                 dao.delete(id);
 
+                request.getSession().setAttribute("FLASH_SUCCESS", "Medical record deleted successfully.");
+
             } catch (Exception e) {
                 e.printStackTrace();
+                request.getSession().setAttribute("FLASH_ERROR", "Failed to delete medical record.");
             }
 
             response.sendRedirect("medicalRecord?action=list");
@@ -286,5 +371,34 @@ public class MedicalRecordServlet extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
+
+    // ===============================
+    // VALIDATE MEDICAL RECORD FORM DATA (server-side)
+    // ===============================
+    private List<String> validateRecord(
+            String patientIDStr, String doctorIDStr, String diagnosis) {
+
+        List<String> errors = new ArrayList<>();
+
+        if (!Validator.isRequired(patientIDStr)
+                || !Validator.isValidPositiveInt(patientIDStr)) {
+            errors.add("Patient ID is required and must be a valid number.");
+        } else if (new PatientDAO().getById(Integer.parseInt(patientIDStr)) == null) {
+            errors.add("Patient ID does not exist.");
+        }
+
+        if (!Validator.isRequired(doctorIDStr)
+                || !Validator.isValidPositiveInt(doctorIDStr)) {
+            errors.add("Doctor ID is required and must be a valid number.");
+        } else if (new DoctorDAO().getById(Integer.parseInt(doctorIDStr)) == null) {
+            errors.add("Doctor ID does not exist.");
+        }
+
+        if (!Validator.isRequired(diagnosis)) {
+            errors.add("Diagnosis cannot be empty.");
+        }
+
+        return errors;
+    }
 
 }

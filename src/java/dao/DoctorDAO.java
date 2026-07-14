@@ -234,6 +234,30 @@ public class DoctorDAO extends DBContext{
     
    
     
+    // ===============================
+    // KIỂM TRA TRÙNG SỐ ĐIỆN THOẠI (dùng cho Validation)
+    // excludeId = 0 khi Insert, = DoctorID hiện tại khi Update
+    // ===============================
+    public boolean existsByPhone(String phone, int excludeId){
+
+    String sql = "SELECT DoctorID FROM Doctor "
+            + "WHERE Phone = ? AND DoctorID <> ?";
+
+    try{
+        PreparedStatement st = connection.prepareStatement(sql);
+        st.setString(1, phone);
+        st.setInt(2, excludeId);
+
+        ResultSet rs = st.executeQuery();
+        return rs.next();
+
+    }catch(Exception e){
+        e.printStackTrace();
+    }
+
+    return false;
+}
+
 //ĐẾM SỐ DOCTOR
     public int getTotal(){
 

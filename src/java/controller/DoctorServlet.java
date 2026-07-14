@@ -12,8 +12,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.List;
 import model.Doctor;
+import utils.Validator;
 
 /**
  *
@@ -176,20 +178,40 @@ public class DoctorServlet extends HttpServlet {
         switch (action) {
 
             //================ INSERT =================
-            case "insert":
+            case "insert": {
 
-                try {
+                String fullName = request.getParameter("fullName");
+                String specialization = request.getParameter("specialization");
+                String phone = request.getParameter("phone");
+                String departmentIDStr = request.getParameter("departmentID");
 
-                    String fullName = request.getParameter("fullName");
-                    String specialization = request.getParameter("specialization");
-                    String phone = request.getParameter("phone");
-                    int departmentID = Integer.parseInt(request.getParameter("departmentID"));
+                List<String> errors = validateDoctor(
+                        fullName, phone, departmentIDStr, 0, dao);
+
+                if (!errors.isEmpty()) {
 
                     Doctor d = new Doctor();
-
                     d.setFullName(fullName);
                     d.setSpecialization(specialization);
                     d.setPhone(phone);
+
+                    request.setAttribute("errors", errors);
+                    request.setAttribute("doctor", d);
+
+                    request.getRequestDispatcher("jsp/doctor/form.jsp")
+                            .forward(request, response);
+                    return;
+                }
+
+                try {
+
+                    int departmentID = Integer.parseInt(departmentIDStr);
+
+                    Doctor d = new Doctor();
+
+                    d.setFullName(fullName.trim());
+                    d.setSpecialization(specialization);
+                    d.setPhone(phone.trim());
                     d.setDepartmentID(departmentID);
 
                     dao.insert(d);
@@ -201,25 +223,47 @@ public class DoctorServlet extends HttpServlet {
                 response.sendRedirect("doctor?action=list");
 
                 break;
+            }
 
             //================ UPDATE =================
-            case "update":
+            case "update": {
 
-                try {
+                int doctorID = Integer.parseInt(request.getParameter("doctorID"));
 
-                    int doctorID = Integer.parseInt(request.getParameter("doctorID"));
+                String fullName = request.getParameter("fullName");
+                String specialization = request.getParameter("specialization");
+                String phone = request.getParameter("phone");
+                String departmentIDStr = request.getParameter("departmentID");
 
-                    String fullName = request.getParameter("fullName");
-                    String specialization = request.getParameter("specialization");
-                    String phone = request.getParameter("phone");
-                    int departmentID = Integer.parseInt(request.getParameter("departmentID"));
+                List<String> errors = validateDoctor(
+                        fullName, phone, departmentIDStr, doctorID, dao);
+
+                if (!errors.isEmpty()) {
 
                     Doctor d = new Doctor();
-
                     d.setDoctorID(doctorID);
                     d.setFullName(fullName);
                     d.setSpecialization(specialization);
                     d.setPhone(phone);
+
+                    request.setAttribute("errors", errors);
+                    request.setAttribute("doctor", d);
+
+                    request.getRequestDispatcher("jsp/doctor/form.jsp")
+                            .forward(request, response);
+                    return;
+                }
+
+                try {
+
+                    int departmentID = Integer.parseInt(departmentIDStr);
+
+                    Doctor d = new Doctor();
+
+                    d.setDoctorID(doctorID);
+                    d.setFullName(fullName.trim());
+                    d.setSpecialization(specialization);
+                    d.setPhone(phone.trim());
                     d.setDepartmentID(departmentID);
 
                     dao.update(d);
@@ -231,6 +275,7 @@ public class DoctorServlet extends HttpServlet {
                 response.sendRedirect("doctor?action=list");
 
                 break;
+            }
 
             //================ DELETE =================
             case "delete":
@@ -266,5 +311,36 @@ public class DoctorServlet extends HttpServlet {
     public String getServletInfo() {
         return "Doctor Servlet";
     }// </editor-fold>
+
+    // ===============================
+    // VALIDATE DOCTOR FORM DATA (server-side)
+    // excludeId = 0 khi Insert, = DoctorID hiện tại khi Update
+    // ===============================
+    private List<String> validateDoctor(
+            String fullName, String phone, String departmentIDStr,
+            int excludeId, DoctorDAO dao) {
+
+        List<String> errors = new ArrayList<>();
+
+        if (!Validator.isRequired(fullName)) {
+            errors.add("Full name cannot be empty.");
+        }
+
+        if (!Validator.isRequired(phone)) {
+            errors.add("Phone number cannot be empty.");
+        } else if (!Validator.isValidPhone(phone.trim())) {
+            errors.add("Phone number is invalid (must be 10 digits, starting with 0).");
+        } else if (dao.existsByPhone(phone.trim(), excludeId)) {
+            errors.add("Phone number already exists.");
+        }
+
+        if (!Validator.isRequired(departmentIDStr)) {
+            errors.add("Department ID cannot be empty.");
+        } else if (!Validator.isValidPositiveInt(departmentIDStr)) {
+            errors.add("Department ID must be a valid positive number.");
+        }
+
+        return errors;
+    }
 
 }

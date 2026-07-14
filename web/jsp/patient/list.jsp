@@ -15,17 +15,23 @@
 
     <div class="d-flex justify-content-between mb-3">
 
-        <h2>Patient Management</h2>
+        <h2>
+            <c:if test="${sessionScope.ACCOUNT.role == 'Patient'}">My Profile</c:if>
+            <c:if test="${sessionScope.ACCOUNT.role != 'Patient'}">Patient Management</c:if>
+        </h2>
 
-        <a href="patient?action=add"
-           class="btn btn-success">
+        <c:if test="${sessionScope.ACCOUNT.role != 'Patient'}">
+            <a href="patient?action=add"
+               class="btn btn-success">
 
-            Add Patient
+                Add Patient
 
-        </a>
+            </a>
+        </c:if>
 
     </div>
 
+    <c:if test="${sessionScope.ACCOUNT.role != 'Patient'}">
     <form action="patient"
           method="get"
           class="mb-3">
@@ -49,6 +55,7 @@
         </div>
 
     </form>
+    </c:if>
 
     <table class="table table-bordered table-hover">
 
@@ -93,6 +100,7 @@
 
                     </a>
 
+                    <c:if test="${sessionScope.ACCOUNT.role != 'Patient'}">
                     <form action="patient"
                           method="post"
                           style="display:inline">
@@ -113,6 +121,7 @@
                         </button>
 
                     </form>
+                    </c:if>
 
                 </td>
 

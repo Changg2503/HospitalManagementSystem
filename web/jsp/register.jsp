@@ -101,6 +101,7 @@
                         <input type="password"
                                name="password"
                                class="form-control"
+                               minlength="6"
                                required>
 
                     </div>
@@ -147,7 +148,8 @@
 
                         <input type="date"
                                name="dob"
-                               class="form-control">
+                               class="form-control"
+                               required>
 
                     </div>
 
@@ -157,9 +159,12 @@
                             Phone
                         </label>
 
-                        <input type="text"
+                        <input type="tel"
                                name="phone"
-                               class="form-control">
+                               class="form-control"
+                               pattern="0\d{9}"
+                               title="Phone must be 10 digits, starting with 0"
+                               required>
 
                     </div>
 
@@ -171,7 +176,8 @@
 
                         <input type="email"
                                name="email"
-                               class="form-control">
+                               class="form-control"
+                               required>
 
                     </div>
 

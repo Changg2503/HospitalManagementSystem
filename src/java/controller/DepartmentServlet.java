@@ -12,8 +12,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.List;
 import model.Department;
+import utils.Validator;
 
 /**
  *
@@ -175,8 +177,11 @@ public class DepartmentServlet extends HttpServlet {
 
                     dao.deleteDepartment(id);
 
+                    request.getSession().setAttribute("FLASH_SUCCESS", "Department deleted successfully.");
+
                 } catch (Exception e) {
                     e.printStackTrace();
+                    request.getSession().setAttribute("FLASH_ERROR", "Failed to delete department (it may still have doctors assigned).");
                 }
 
                 response.sendRedirect("department");
@@ -186,19 +191,44 @@ public class DepartmentServlet extends HttpServlet {
             //================ UPDATE =================
             case "update": {
 
-                try {
-                    int id = Integer.parseInt(request.getParameter("id"));
-                    String name = request.getParameter("name");
+                int id = Integer.parseInt(request.getParameter("id"));
+                String name = request.getParameter("name");
+
+                List<String> errors = new ArrayList<>();
+
+                if (!Validator.isRequired(name)) {
+                    errors.add("Department name cannot be empty.");
+                } else if (dao.existsByName(name.trim(), id)) {
+                    errors.add("Department name already exists.");
+                }
+
+                if (!errors.isEmpty()) {
 
                     Department d = new Department();
-
                     d.setDepartmentID(id);
                     d.setDepartmentName(name);
 
+                    request.setAttribute("errors", errors);
+                    request.setAttribute("d", d);
+
+                    request.getRequestDispatcher(
+                            "jsp/department/form.jsp")
+                            .forward(request, response);
+                    return;
+                }
+
+                try {
+                    Department d = new Department();
+                    d.setDepartmentID(id);
+                    d.setDepartmentName(name.trim());
+
                     dao.updateDepartment(d);
+
+                    request.getSession().setAttribute("FLASH_SUCCESS", "Department updated successfully.");
 
                 } catch (Exception e) {
                     e.printStackTrace();
+                    request.getSession().setAttribute("FLASH_ERROR", "Failed to update department.");
                 }
 
                 response.sendRedirect("department");
@@ -208,17 +238,42 @@ public class DepartmentServlet extends HttpServlet {
             //================ INSERT (default) =================
             default: {
 
-                try {
-                    String name = request.getParameter("name");
+                String name = request.getParameter("name");
+
+                List<String> errors = new ArrayList<>();
+
+                if (!Validator.isRequired(name)) {
+                    errors.add("Department name cannot be empty.");
+                } else if (dao.existsByName(name.trim(), 0)) {
+                    errors.add("Department name already exists.");
+                }
+
+                if (!errors.isEmpty()) {
 
                     Department d = new Department();
-
                     d.setDepartmentName(name);
+
+                    request.setAttribute("errors", errors);
+                    request.setAttribute("d", d);
+
+                    request.getRequestDispatcher(
+                            "jsp/department/form.jsp")
+                            .forward(request, response);
+                    return;
+                }
+
+                try {
+                    Department d = new Department();
+
+                    d.setDepartmentName(name.trim());
 
                     dao.addDepartment(d);
 
+                    request.getSession().setAttribute("FLASH_SUCCESS", "Department added successfully.");
+
                 } catch (Exception e) {
                     e.printStackTrace();
+                    request.getSession().setAttribute("FLASH_ERROR", "Failed to add department.");
                 }
 
                 response.sendRedirect("department");

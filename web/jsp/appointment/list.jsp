@@ -52,29 +52,49 @@
 
                 <td>
 
-                    <a href="appointment?action=edit&id=${a.appointmentID}"
-                       class="btn btn-warning btn-sm">
-                        Edit
-                    </a>
+                    <c:if test="${sessionScope.ACCOUNT.role == 'Admin' || sessionScope.ACCOUNT.role == 'Doctor'}">
 
-                    <form action="appointment"
-                          method="post"
-                          style="display:inline">
+                        <a href="appointment?action=edit&id=${a.appointmentID}"
+                           class="btn btn-warning btn-sm">
+                            Edit
+                        </a>
 
-                        <input type="hidden"
-                               name="action"
-                               value="delete">
+                        <form action="appointment"
+                              method="post"
+                              style="display:inline">
 
-                        <input type="hidden"
-                               name="id"
-                               value="${a.appointmentID}">
+                            <input type="hidden"
+                                   name="action"
+                                   value="delete">
 
-                        <button class="btn btn-danger btn-sm"
-                                onclick="return confirm('Delete this appointment?')">
-                            Delete
-                        </button>
+                            <input type="hidden"
+                                   name="id"
+                                   value="${a.appointmentID}">
 
-                    </form>
+                            <button class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Delete this appointment?')">
+                                Delete
+                            </button>
+
+                        </form>
+
+                    </c:if>
+
+                    <c:if test="${sessionScope.ACCOUNT.role == 'Patient'}">
+
+                        <c:if test="${a.status == 'Pending' || a.status == 'Confirmed'}">
+                            <a href="appointment?action=cancel&id=${a.appointmentID}"
+                               class="btn btn-outline-danger btn-sm"
+                               onclick="return confirm('Cancel this appointment?')">
+                                Cancel
+                            </a>
+                        </c:if>
+
+                        <c:if test="${a.status != 'Pending' && a.status != 'Confirmed'}">
+                            <span class="text-muted">—</span>
+                        </c:if>
+
+                    </c:if>
 
                 </td>
 

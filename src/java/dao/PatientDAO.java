@@ -86,6 +86,44 @@ public class PatientDAO extends DBContext {
 
         return null;
     }
+
+    // ===============================
+    // Lấy Patient tương ứng với 1 Account đang đăng nhập
+    // Dùng để giới hạn dữ liệu cho role Patient
+    // ===============================
+    public Patient getByAccountID(int accountID) {
+
+        String sql
+                = "SELECT * FROM Patient WHERE AccountID=?";
+
+        try {
+
+            PreparedStatement st
+                    = connection.prepareStatement(sql);
+
+            st.setInt(1, accountID);
+
+            ResultSet rs = st.executeQuery();
+
+            if (rs.next()) {
+
+                return new Patient(
+                        rs.getInt("PatientID"),
+                        rs.getInt("AccountID"),
+                        rs.getString("FullName"),
+                        rs.getString("Gender"),
+                        rs.getDate("DOB"),
+                        rs.getString("Phone"),
+                        rs.getString("Email"),
+                        rs.getString("Address"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 //Insert
 
     public void insert(Patient p) {
@@ -175,6 +213,51 @@ public class PatientDAO extends DBContext {
         } catch (Exception e) {
              e.printStackTrace();
         }
+    }
+
+    // ===============================
+    // KIỂM TRA TRÙNG LẶP (dùng cho Validation)
+    // excludeId: truyền PatientID hiện tại khi Update (để không tự báo trùng với chính nó)
+    //            truyền 0 khi Insert
+    // ===============================
+    public boolean existsByPhone(String phone, int excludeId) {
+
+        String sql = "SELECT PatientID FROM Patient "
+                + "WHERE Phone = ? AND PatientID <> ?";
+
+        try {
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, phone);
+            ps.setInt(2, excludeId);
+
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public boolean existsByEmail(String email, int excludeId) {
+
+        String sql = "SELECT PatientID FROM Patient "
+                + "WHERE Email = ? AND PatientID <> ?";
+
+        try {
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, email);
+            ps.setInt(2, excludeId);
+
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
 //Phân trang

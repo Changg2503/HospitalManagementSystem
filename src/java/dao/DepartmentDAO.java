@@ -124,6 +124,30 @@ public class DepartmentDAO extends DBContext {
         }
     }
 
+    // ===============================
+    // KIỂM TRA TRÙNG TÊN PHÒNG BAN (dùng cho Validation)
+    // excludeId = 0 khi Insert, = DepartmentID hiện tại khi Update
+    // ===============================
+    public boolean existsByName(String name, int excludeId) {
+
+        String sql = "SELECT DepartmentID FROM Department "
+                + "WHERE DepartmentName = ? AND DepartmentID <> ?";
+
+        try {
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, name);
+            ps.setInt(2, excludeId);
+
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
     // Search department by name
     public List<Department> search(String keyword) {
 

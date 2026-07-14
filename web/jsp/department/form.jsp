@@ -26,6 +26,16 @@
 
         <div class="card-body">
 
+            <c:if test="${not empty errors}">
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        <c:forEach items="${errors}" var="err">
+                            <li>${err}</li>
+                        </c:forEach>
+                    </ul>
+                </div>
+            </c:if>
+
             <form action="department"
                   method="post">
 

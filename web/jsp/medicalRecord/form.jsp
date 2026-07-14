@@ -18,7 +18,7 @@
         <div class="card-header">
 
             <h3>
-                ${record == null ?
+                ${record == null || record.recordID == 0 ?
                 'Add Medical Record'
                 :
                 'Update Medical Record'}
@@ -28,14 +28,24 @@
 
         <div class="card-body">
 
+            <c:if test="${not empty errors}">
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        <c:forEach items="${errors}" var="err">
+                            <li>${err}</li>
+                        </c:forEach>
+                    </ul>
+                </div>
+            </c:if>
+
             <form action="medicalRecord"
                   method="post">
 
                 <input type="hidden"
                        name="action"
-                       value="${record==null?'insert':'update'}">
+                       value="${(record==null || record.recordID == 0)?'insert':'update'}">
 
-                <c:if test="${record != null}">
+                <c:if test="${record != null and record.recordID != 0}">
                     <input type="hidden"
                            name="recordID"
                            value="${record.recordID}">
@@ -88,7 +98,7 @@
 
                     </div>
 
-                    <c:if test="${record != null}">
+                    <c:if test="${record != null and record.recordID != 0}">
                         <div class="col-md-6 mb-3">
 
                             <label>Created Date</label>

@@ -13,8 +13,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 import model.Patient;
+import utils.Validator;
 
 /**
  *
@@ -64,10 +66,39 @@ public class PatientServlet extends HttpServlet {
             action = "list";
         }
 
+        // Xác định Patient hiện tại (nếu role = Patient) để giới hạn dữ liệu
+        model.Account account = (model.Account) request.getSession().getAttribute("ACCOUNT");
+        Integer myPatientID = null;
+
+        if (account != null && "Patient".equals(account.getRole())) {
+            Patient myPatient = dao.getByAccountID(account.getAccountID());
+            if (myPatient != null) {
+                myPatientID = myPatient.getPatientID();
+            }
+        }
+
         switch (action) {
 
             //================ LIST + PAGINATION =================
             case "list":
+
+                // Role Patient: chỉ xem thông tin của chính mình (không phân trang)
+                if (myPatientID != null) {
+
+                    List<Patient> own = new ArrayList<>();
+                    Patient me = dao.getById(myPatientID);
+                    if (me != null) {
+                        own.add(me);
+                    }
+
+                    request.setAttribute("listPatient", own);
+                    request.setAttribute("currentPage", 1);
+                    request.setAttribute("endPage", 1);
+
+                    request.getRequestDispatcher("jsp/patient/list.jsp")
+                            .forward(request, response);
+                    break;
+                }
 
                 int page = 1;
 
@@ -110,6 +141,12 @@ public class PatientServlet extends HttpServlet {
 
                 List<Patient> result = dao.search(keyword);
 
+                // Role Patient: chỉ thấy chính mình trong kết quả search (nếu có)
+                if (myPatientID != null) {
+                    final int pid = myPatientID;
+                    result.removeIf(p -> p.getPatientID() != pid);
+                }
+
                 request.setAttribute("listPatient", result);
                 request.setAttribute("keyword", keyword);
 
@@ -120,6 +157,12 @@ public class PatientServlet extends HttpServlet {
 
             //================ OPEN ADD FORM =================
             case "add":
+
+                // Role Patient không được tự tạo hồ sơ bệnh nhân mới
+                if (myPatientID != null) {
+                    response.sendRedirect("patient?action=list");
+                    break;
+                }
 
                 request.getRequestDispatcher("jsp/patient/form.jsp")
                         .forward(request, response);
@@ -132,6 +175,12 @@ public class PatientServlet extends HttpServlet {
                 try {
 
                     int id = Integer.parseInt(request.getParameter("id"));
+
+                    // Role Patient: chỉ được sửa hồ sơ của chính mình
+                    if (myPatientID != null && id != myPatientID) {
+                        response.sendRedirect("patient?action=list");
+                        break;
+                    }
 
                     Patient patient = dao.getById(id);
 
@@ -176,82 +225,171 @@ public class PatientServlet extends HttpServlet {
             action = "";
         }
 
+        // Xác định Patient hiện tại (nếu role = Patient) để chặn thao tác trên hồ sơ người khác
+        model.Account account = (model.Account) request.getSession().getAttribute("ACCOUNT");
+        Integer myPatientID = null;
+
+        if (account != null && "Patient".equals(account.getRole())) {
+            Patient myPatient = dao.getByAccountID(account.getAccountID());
+            if (myPatient != null) {
+                myPatientID = myPatient.getPatientID();
+            }
+        }
+
+        // Role Patient: không được insert hoặc delete
+        if (myPatientID != null && ("insert".equals(action) || "delete".equals(action))) {
+            request.getSession().setAttribute("FLASH_ERROR", "You are not allowed to perform this action.");
+            response.sendRedirect("patient?action=list");
+            return;
+        }
+
+        // Role Patient: update chỉ được áp dụng cho chính hồ sơ của mình
+        if (myPatientID != null && "update".equals(action)) {
+            String idParam = request.getParameter("patientID");
+            try {
+                int targetId = Integer.parseInt(idParam);
+                if (targetId != myPatientID) {
+                    request.getSession().setAttribute("FLASH_ERROR", "You are not allowed to edit this record.");
+                    response.sendRedirect("patient?action=list");
+                    return;
+                }
+            } catch (Exception e) {
+                response.sendRedirect("patient?action=list");
+                return;
+            }
+        }
+
         switch (action) {
 
             //================ INSERT =================
-            case "insert":
+            case "insert": {
 
-                try {
+                String accIdParam = request.getParameter("accountID");
+                String fullName = request.getParameter("fullName");
+                String gender = request.getParameter("gender");
+                String dobStr = request.getParameter("dob");
+                String phone = request.getParameter("phone");
+                String email = request.getParameter("email");
+                String address = request.getParameter("address");
 
-                    String accIdParam = request.getParameter("accountID");
-                    int accountID = (accIdParam == null || accIdParam.isEmpty())
-                            ? 0 : Integer.parseInt(accIdParam);
+                List<String> errors = validatePatient(
+                        fullName, phone, email, dobStr, 0, dao);
 
-                    String fullName = request.getParameter("fullName");
-                    String gender = request.getParameter("gender");
-                    Date dob = Date.valueOf(request.getParameter("dob"));
-                    String phone = request.getParameter("phone");
-                    String email = request.getParameter("email");
-                    String address = request.getParameter("address");
+                if (!errors.isEmpty()) {
 
                     Patient p = new Patient();
-
-                    p.setAccountID(accountID);
                     p.setFullName(fullName);
                     p.setGender(gender);
-                    p.setDob(dob);
                     p.setPhone(phone);
                     p.setEmail(email);
                     p.setAddress(address);
 
+                    request.setAttribute("errors", errors);
+                    request.setAttribute("patient", p);
+
+                    request.getRequestDispatcher(
+                            "jsp/patient/form.jsp")
+                            .forward(request, response);
+                    return;
+                }
+
+                try {
+
+                    int accountID = (accIdParam == null || accIdParam.isEmpty())
+                            ? 0 : Integer.parseInt(accIdParam);
+
+                    Date dob = Date.valueOf(dobStr);
+
+                    Patient p = new Patient();
+
+                    p.setAccountID(accountID);
+                    p.setFullName(fullName.trim());
+                    p.setGender(gender);
+                    p.setDob(dob);
+                    p.setPhone(phone.trim());
+                    p.setEmail(email.trim());
+                    p.setAddress(address);
+
                     dao.insert(p);
+
+                    request.getSession().setAttribute("FLASH_SUCCESS", "Patient added successfully.");
 
                 } catch (Exception e) {
                     e.printStackTrace();
+                    request.getSession().setAttribute("FLASH_ERROR", "Failed to add patient.");
                 }
 
                 response.sendRedirect("patient?action=list");
 
                 break;
+            }
 
             //================ UPDATE =================
-            case "update":
+            case "update": {
+
+                int id = Integer.parseInt(request.getParameter("patientID"));
+
+                String accIdParam = request.getParameter("accountID");
+                String fullName = request.getParameter("fullName");
+                String gender = request.getParameter("gender");
+                String dobStr = request.getParameter("dob");
+                String phone = request.getParameter("phone");
+                String email = request.getParameter("email");
+                String address = request.getParameter("address");
+
+                List<String> errors = validatePatient(
+                        fullName, phone, email, dobStr, id, dao);
+
+                if (!errors.isEmpty()) {
+
+                    Patient p = new Patient();
+                    p.setPatientID(id);
+                    p.setFullName(fullName);
+                    p.setGender(gender);
+                    p.setPhone(phone);
+                    p.setEmail(email);
+                    p.setAddress(address);
+
+                    request.setAttribute("errors", errors);
+                    request.setAttribute("patient", p);
+
+                    request.getRequestDispatcher(
+                            "jsp/patient/form.jsp")
+                            .forward(request, response);
+                    return;
+                }
 
                 try {
 
-                    int id = Integer.parseInt(request.getParameter("patientID"));
-
-                    String accIdParam = request.getParameter("accountID");
                     int accountID = (accIdParam == null || accIdParam.isEmpty())
                             ? 0 : Integer.parseInt(accIdParam);
 
-                    String fullName = request.getParameter("fullName");
-                    String gender = request.getParameter("gender");
-                    Date dob = Date.valueOf(request.getParameter("dob"));
-                    String phone = request.getParameter("phone");
-                    String email = request.getParameter("email");
-                    String address = request.getParameter("address");
+                    Date dob = Date.valueOf(dobStr);
 
                     Patient p = new Patient();
 
                     p.setPatientID(id);
                     p.setAccountID(accountID);
-                    p.setFullName(fullName);
+                    p.setFullName(fullName.trim());
                     p.setGender(gender);
                     p.setDob(dob);
-                    p.setPhone(phone);
-                    p.setEmail(email);
+                    p.setPhone(phone.trim());
+                    p.setEmail(email.trim());
                     p.setAddress(address);
 
                     dao.update(p);
 
+                    request.getSession().setAttribute("FLASH_SUCCESS", "Patient updated successfully.");
+
                 } catch (Exception e) {
                     e.printStackTrace();
+                    request.getSession().setAttribute("FLASH_ERROR", "Failed to update patient.");
                 }
 
                 response.sendRedirect("patient?action=list");
 
                 break;
+            }
 
             //================ DELETE =================
             case "delete":
@@ -262,8 +400,11 @@ public class PatientServlet extends HttpServlet {
 
                     dao.delete(id);
 
+                    request.getSession().setAttribute("FLASH_SUCCESS", "Patient deleted successfully.");
+
                 } catch (Exception e) {
                     e.printStackTrace();
+                    request.getSession().setAttribute("FLASH_ERROR", "Failed to delete patient.");
                 }
 
                 response.sendRedirect("patient?action=list");
@@ -288,5 +429,46 @@ public class PatientServlet extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
+
+    // ===============================
+    // VALIDATE PATIENT FORM DATA (server-side)
+    // excludeId = 0 khi Insert, = PatientID hiện tại khi Update
+    // ===============================
+    private List<String> validatePatient(
+            String fullName, String phone, String email,
+            String dobStr, int excludeId, PatientDAO dao) {
+
+        List<String> errors = new ArrayList<>();
+
+        if (!Validator.isRequired(fullName)) {
+            errors.add("Full name cannot be empty.");
+        }
+
+        if (!Validator.isRequired(phone)) {
+            errors.add("Phone number cannot be empty.");
+        } else if (!Validator.isValidPhone(phone.trim())) {
+            errors.add("Phone number is invalid (must be 10 digits, starting with 0).");
+        } else if (dao.existsByPhone(phone.trim(), excludeId)) {
+            errors.add("Phone number already exists.");
+        }
+
+        if (!Validator.isRequired(email)) {
+            errors.add("Email cannot be empty.");
+        } else if (!Validator.isValidEmail(email.trim())) {
+            errors.add("Email format is invalid.");
+        } else if (dao.existsByEmail(email.trim(), excludeId)) {
+            errors.add("Email already exists.");
+        }
+
+        if (!Validator.isRequired(dobStr)) {
+            errors.add("Date of birth cannot be empty.");
+        } else if (!Validator.isValidDate(dobStr)) {
+            errors.add("Date of birth format is invalid.");
+        } else if (!Validator.isNotFutureDate(dobStr)) {
+            errors.add("Date of birth cannot be in the future.");
+        }
+
+        return errors;
+    }
 
 }

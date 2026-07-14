@@ -19,7 +19,7 @@
 
             <h3>
 
-                ${patient == null ?
+                ${patient == null || patient.patientID == 0 ?
                 'Add Patient'
                 :
                 'Update Patient'}
@@ -30,14 +30,24 @@
 
         <div class="card-body">
 
+            <c:if test="${not empty errors}">
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        <c:forEach items="${errors}" var="err">
+                            <li>${err}</li>
+                        </c:forEach>
+                    </ul>
+                </div>
+            </c:if>
+
             <form action="patient"
                   method="post">
 
                 <input type="hidden"
                        name="action"
-                       value="${patient==null?'insert':'update'}">
+                       value="${(patient==null || patient.patientID == 0)?'insert':'update'}">
 
-                <c:if test="${patient != null}">
+                <c:if test="${patient != null and patient.patientID != 0}">
 
                     <input type="hidden"
                            name="patientID"
@@ -49,13 +59,12 @@
 
                     <div class="col-md-6 mb-3">
 
-                        <label>Account ID</label>
+                        <label>Account ID (optional)</label>
 
                         <input type="number"
                                name="accountID"
                                class="form-control"
-                               value="${patient.accountID}"
-                               required>
+                               value="${patient.accountID}"">
 
                     </div>
 
@@ -99,7 +108,8 @@
                         <input type="date"
                                name="dob"
                                class="form-control"
-                               value="${patient.dob}">
+                               value="${patient.dob}"
+                               required>
 
                     </div>
 
@@ -107,10 +117,13 @@
 
                         <label>Phone</label>
 
-                        <input type="text"
+                        <input type="tel"
                                name="phone"
                                class="form-control"
-                               value="${patient.phone}">
+                               pattern="0\d{9}"
+                               title="Phone must be 10 digits, starting with 0"
+                               value="${patient.phone}"
+                               required>
 
                     </div>
 
@@ -121,7 +134,8 @@
                         <input type="email"
                                name="email"
                                class="form-control"
-                               value="${patient.email}">
+                               value="${patient.email}"
+                               required>
 
                     </div>
 

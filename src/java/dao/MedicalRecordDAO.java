@@ -228,6 +228,71 @@ public class MedicalRecordDAO extends DBContext {
 
         return list;
     }
+
+    // ===============================
+    // PATIENT-SCOPED QUERIES
+    // Dùng cho role Patient: chỉ xem hồ sơ bệnh án của chính mình
+    // ===============================
+    public List<MedicalRecord> pagingByPatient(int patientID, int page) {
+
+        List<MedicalRecord> list = new ArrayList<>();
+
+        String sql = """
+                 SELECT *
+                 FROM MedicalRecord
+                 WHERE PatientID = ?
+                 ORDER BY RecordID
+                 OFFSET ? ROWS
+                 FETCH NEXT 5 ROWS ONLY
+                 """;
+
+        try {
+
+            PreparedStatement ps = connection.prepareStatement(sql);
+
+            ps.setInt(1, patientID);
+            ps.setInt(2, (page - 1) * 5);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(new MedicalRecord(
+                        rs.getInt("RecordID"),
+                        rs.getInt("PatientID"),
+                        rs.getInt("DoctorID"),
+                        rs.getString("Diagnosis"),
+                        rs.getString("Treatment"),
+                        rs.getTimestamp("CreatedDate")
+                ));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public int getTotalByPatient(int patientID) {
+
+        String sql = "SELECT COUNT(*) FROM MedicalRecord WHERE PatientID = ?";
+
+        try {
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setInt(1, patientID);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
     /*
     //-------------------------lấy danh sách bệnh nhân-------------------------
     public List<Patient> getAllPatient() {

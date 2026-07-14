@@ -15,8 +15,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 import model.Account;
 import model.Patient;
+import utils.Validator;
 
 /**
  *
@@ -102,37 +105,72 @@ public class RegisterServlet extends HttpServlet {
             String address =
                     request.getParameter("address");
 
-            Date dob = null;
+            AccountDAO accountDAO = new AccountDAO();
+            PatientDAO patientDAO = new PatientDAO();
 
-            if (dobStr != null
-                    && !dobStr.isEmpty()) {
-                dob = Date.valueOf(dobStr);
+            // ===============================
+            // SERVER-SIDE VALIDATION
+            // ===============================
+            List<String> errors = new ArrayList<>();
+
+            if (!Validator.isRequired(username)) {
+                errors.add("Username cannot be empty.");
+            } else if (accountDAO.checkUsernameExist(username.trim())) {
+                errors.add("Username already exists.");
             }
 
-            AccountDAO accountDAO =
-                    new AccountDAO();
+            if (!Validator.isRequired(password)) {
+                errors.add("Password cannot be empty.");
+            } else if (password.length() < 6) {
+                errors.add("Password must be at least 6 characters.");
+            }
 
-            // kiểm tra username tồn tại
-            if (accountDAO
-                    .checkUsernameExist(username)) {
+            if (!Validator.isRequired(fullName)) {
+                errors.add("Full name cannot be empty.");
+            }
 
-                request.setAttribute(
-                        "ERROR",
-                        "Username already exists!");
+            if (!Validator.isRequired(phone)) {
+                errors.add("Phone number cannot be empty.");
+            } else if (!Validator.isValidPhone(phone.trim())) {
+                errors.add("Phone number is invalid (must be 10 digits, starting with 0).");
+            } else if (patientDAO.existsByPhone(phone.trim(), 0)) {
+                errors.add("Phone number already exists.");
+            }
+
+            if (!Validator.isRequired(email)) {
+                errors.add("Email cannot be empty.");
+            } else if (!Validator.isValidEmail(email.trim())) {
+                errors.add("Email format is invalid.");
+            } else if (patientDAO.existsByEmail(email.trim(), 0)) {
+                errors.add("Email already exists.");
+            }
+
+            if (!Validator.isRequired(dobStr)) {
+                errors.add("Date of birth cannot be empty.");
+            } else if (!Validator.isValidDate(dobStr)) {
+                errors.add("Date of birth format is invalid.");
+            } else if (!Validator.isNotFutureDate(dobStr)) {
+                errors.add("Date of birth cannot be in the future.");
+            }
+
+            if (!errors.isEmpty()) {
+
+                request.setAttribute("ERROR", String.join(" | ", errors));
 
                 request.getRequestDispatcher(
                         "jsp/register.jsp")
-                        .forward(request,
-                                response);
+                        .forward(request, response);
 
                 return;
             }
+
+            Date dob = Date.valueOf(dobStr);
 
             // Tạo Account
             Account acc =
                     new Account();
 
-            acc.setUsername(username);
+            acc.setUsername(username.trim());
             acc.setPassword(password);
             acc.setRole("Patient");
             acc.setStatus(true);
@@ -143,22 +181,19 @@ public class RegisterServlet extends HttpServlet {
             int accountID =
                     accountDAO
                             .getAccountIDByUsername(
-                                    username);
+                                    username.trim());
 
             // Tạo Patient
             Patient p =
                     new Patient();
 
             p.setAccountID(accountID);
-            p.setFullName(fullName);
+            p.setFullName(fullName.trim());
             p.setGender(gender);
             p.setDob(dob);
-            p.setPhone(phone);
-            p.setEmail(email);
+            p.setPhone(phone.trim());
+            p.setEmail(email.trim());
             p.setAddress(address);
-
-            PatientDAO patientDAO =
-                    new PatientDAO();
 
             patientDAO.insert(p);
 

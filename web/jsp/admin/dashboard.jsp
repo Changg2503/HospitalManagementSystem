@@ -11,7 +11,7 @@
 <jsp:include page="../common/header.jsp"/>
 <jsp:include page="../common/sidebar.jsp"/>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 
 <div class="content">
 
@@ -155,6 +155,11 @@
                     <div style="position:relative;height:220px;">
                         <canvas id="dashboardStatusChart"></canvas>
                     </div>
+                    <table id="dataDashStatus" style="display:none">
+                        <c:forEach items="${STATUS_REPORT}" var="row">
+                            <tr><td>${row[0]}</td><td>${row[1]}</td></tr>
+                        </c:forEach>
+                    </table>
                 </c:if>
 
                 <div class="d-grid mt-3">
@@ -175,23 +180,42 @@
 <jsp:include page="../common/footer.jsp"/>
 
 <script>
-    const dashStatusLabels = [<c:forEach items="${STATUS_REPORT}" var="row" varStatus="st">'${row[0]}'<c:if test="${!st.last}">,</c:if></c:forEach>];
-    const dashStatusData = [<c:forEach items="${STATUS_REPORT}" var="row" varStatus="st">${row[1]}<c:if test="${!st.last}">,</c:if></c:forEach>];
-
-    if (dashStatusLabels.length > 0) {
-        new Chart(document.getElementById('dashboardStatusChart'), {
-            type: 'doughnut',
-            data: {
-                labels: dashStatusLabels,
-                datasets: [{
-                    data: dashStatusData,
-                    backgroundColor: ['#0d6efd', '#20c997', '#ffc107', '#dc3545', '#6f42c1']
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
+    function readTable(tableId) {
+        const labels = [];
+        const data = [];
+        const table = document.getElementById(tableId);
+        if (!table) {
+            return {labels: labels, data: data};
+        }
+        table.querySelectorAll('tr').forEach(function (tr) {
+            const cells = tr.querySelectorAll('td');
+            if (cells.length === 2) {
+                labels.push(cells[0].textContent.trim());
+                data.push(parseFloat(cells[1].textContent.trim()) || 0);
             }
         });
+        return {labels: labels, data: data};
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const dashStatus = readTable('dataDashStatus');
+
+        if (dashStatus.labels.length > 0) {
+            new Chart(document.getElementById('dashboardStatusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: dashStatus.labels,
+                    datasets: [{
+                        data: dashStatus.data,
+                        backgroundColor: ['#0d6efd', '#20c997', '#ffc107', '#dc3545', '#6f42c1']
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+    });
 </script>

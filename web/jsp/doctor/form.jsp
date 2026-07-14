@@ -19,7 +19,7 @@
 
             <h3>
 
-                ${doctor == null ?
+                ${doctor == null || doctor.doctorID == 0 ?
                 'Add Doctor'
                 :
                 'Update Doctor'}
@@ -30,14 +30,24 @@
 
         <div class="card-body">
 
+            <c:if test="${not empty errors}">
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        <c:forEach items="${errors}" var="err">
+                            <li>${err}</li>
+                        </c:forEach>
+                    </ul>
+                </div>
+            </c:if>
+
             <form action="doctor"
                   method="post">
 
                 <input type="hidden"
                        name="action"
-                       value="${doctor==null?'insert':'update'}">
+                       value="${(doctor==null || doctor.doctorID == 0)?'insert':'update'}">
 
-                <c:if test="${doctor != null}">
+                <c:if test="${doctor != null and doctor.doctorID != 0}">
 
                     <input type="hidden"
                            name="doctorID"
@@ -72,10 +82,13 @@
 
                     <label>Phone</label>
 
-                    <input type="text"
+                    <input type="tel"
                            name="phone"
                            class="form-control"
-                           value="${doctor.phone}">
+                           pattern="0\d{9}"
+                           title="Phone must be 10 digits, starting with 0"
+                           value="${doctor.phone}"
+                           required>
 
                 </div>
 

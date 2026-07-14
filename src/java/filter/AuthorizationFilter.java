@@ -194,8 +194,7 @@ public class AuthorizationFilter implements Filter {
             String action = req.getParameter("action");
 
             boolean isManageAction = action != null
-                    && (action.equals("cancel")
-                    || action.equals("complete")
+                    && (action.equals("complete")
                     || action.equals("edit"));
 
             if (isManageAction

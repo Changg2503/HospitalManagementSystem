@@ -15,12 +15,17 @@
 
     <div class="d-flex justify-content-between mb-3">
 
-        <h2>Medical Record Management</h2>
+        <h2>
+            <c:if test="${sessionScope.ACCOUNT.role == 'Patient'}">My </c:if>
+            Medical Record<c:if test="${sessionScope.ACCOUNT.role != 'Patient'}"> Management</c:if>
+        </h2>
 
-        <a href="medicalRecord?action=add"
-           class="btn btn-success">
-            Add Medical Record
-        </a>
+        <c:if test="${sessionScope.ACCOUNT.role != 'Patient'}">
+            <a href="medicalRecord?action=add"
+               class="btn btn-success">
+                Add Medical Record
+            </a>
+        </c:if>
 
     </div>
 
@@ -88,29 +93,37 @@
 
                     <td>
 
-                        <a href="medicalRecord?action=edit&id=${r.recordID}"
-                           class="btn btn-warning btn-sm">
-                            Edit
-                        </a>
+                        <c:if test="${sessionScope.ACCOUNT.role == 'Admin' || sessionScope.ACCOUNT.role == 'Doctor'}">
 
-                        <form action="medicalRecord"
-                              method="post"
-                              style="display:inline">
+                            <a href="medicalRecord?action=edit&id=${r.recordID}"
+                               class="btn btn-warning btn-sm">
+                                Edit
+                            </a>
 
-                            <input type="hidden"
-                                   name="action"
-                                   value="delete">
+                            <form action="medicalRecord"
+                                  method="post"
+                                  style="display:inline">
 
-                            <input type="hidden"
-                                   name="id"
-                                   value="${r.recordID}">
+                                <input type="hidden"
+                                       name="action"
+                                       value="delete">
 
-                            <button class="btn btn-danger btn-sm"
-                                    onclick="return confirm('Delete this medical record?')">
-                                Delete
-                            </button>
+                                <input type="hidden"
+                                       name="id"
+                                       value="${r.recordID}">
 
-                        </form>
+                                <button class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Delete this medical record?')">
+                                    Delete
+                                </button>
+
+                            </form>
+
+                        </c:if>
+
+                        <c:if test="${sessionScope.ACCOUNT.role == 'Patient'}">
+                            <span class="text-muted">View only</span>
+                        </c:if>
 
                     </td>
 
